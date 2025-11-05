@@ -1,0 +1,895 @@
+//
+//  MetalEngine.swift
+//  VideoInvitation
+//
+//  Created by HKBeast on 21/08/23.
+//
+
+import Foundation
+import MetalKit
+import UIKit
+import Combine
+import Network
+
+//@MainActor
+class MetalEngine : ObservableObject, TemplateObserversProtocol , ActionStateObserversProtocol , PlayerControlsReadObservableProtocol  {
+    
+    enum FetchStatus {
+        case Idle , InProgress , Success , Failed , NoInternet
+    }
+   @Published var isLoading : Bool = false
+    
+    @Published var fetchStatus : FetchStatus = .Idle
+    @Published var progressUnit : CGFloat = 0
+    @Published var baseSize : CGSize = .zero
+    
+    var isDBDisabled : Bool = false
+    var shouldRenderOnScene : Bool = true  {
+        didSet {
+            sceneManager.shouldRenderOnScene = shouldRenderOnScene
+
+        }
+    }
+    var playerControlsCancellables: Set<AnyCancellable> = []
+    
+    var modelPropertiesCancellables: Set<AnyCancellable> = Set<AnyCancellable>()
+    var actionStateCancellables: Set<AnyCancellable> = Set<AnyCancellable>()
+    
+    @Injected var analyticsLogger : AnalyticsLogger
+    
+    var TURN_ON_RENDERING = true
+    
+    var editorView : EditorView?
+    
+    var templateHandler : TemplateHandler!
+    
+    var editorUIState : EditorUIStates = .UseMe
+    let minStartTime: Float = 3.0
+    var thumbManagar : ThumbManager?
+    
+//    @Published var showDrop : Drop? = nil
+    
+    
+    func getEditorView(frame:CGRect) {
+        let editorView = EditorView(frame: frame)
+        // viewSceneManager.setEditorView(editorView) TODO: JD Pending
+        self.editorView = editorView
+        editorView.backgroundColor = .clear
+    }
+    func getLazyEditorView(frame:CGRect) -> EditorView {
+        if let editorView = self.editorView {
+            return editorView
+        }
+         getEditorView(frame: frame)
+        return self.editorView!
+    }
+    
+    var canvas : CanvasView {
+        return editorView!.canvasView
+    }
+    
+    
+    
+    enum RenderingState {
+        case Edit
+        case Animating
+        case SingleAnimation
+    }
+    
+    
+    //MARK: - VARIABLES
+    // private var modelsTable = [Int:BaseModelProtocol]()
+    
+    
+    var databaseManager: DBMediator {
+        return DBMediator.shared
+    }// Manager for database operations
+    
+    
+    var undoRedoManager: UndoRedoManager? // Manager for undo/redo functionality
+    var undoRedoExecutor : UndoRedoExecuter?
+    var sceneManager: SceneManager // Manager for scene operations
+    var drawCallManager : DrawCallManager?
+    var timeLoopHandler : TimeLoopHnadler?
+    var animTimeLoopHandler : AnimationTimeLoopHnadler?
+    var canPlayScene:((Bool, Error? )->())?
+    //save current template info
+    //    var currentTemplateInfo:TemplateInfo?
+    // var viewSceneManager = UISceneViewManager() // we are not using this
+    var viewManager : ViewManager?
+    var currentModel: BaseModelProtocol?
+    var audioPlayer: AudioPlayerForMusicView? //= AudioPlayerForMusicView()
+    // var currentActionModel: ActionStates?
+    
+    
+    
+    
+    var layersManager : LayersViewModel2  {
+        let layerManager = LayersViewModel2()
+        layerManager.setTemplateHandler(th: templateHandler)
+        //        layerManager.engine = self
+        return layerManager
+    }
+    //    var actionStates = ActionStates()
+    //temp
+    
+    var oCenter:CGPoint = CGPoint(x: 209.077021792531, y: 500.8307629823685)
+    
+    //MARK: - Init
+    
+    init() {
+        
+        //        displayView = DisplayView(frame: .zero)
+       
+        self.undoRedoManager = UndoRedoManager()//UndoRedoManager.shared
+        self.undoRedoExecutor = UndoRedoExecuter()
+        self.sceneManager = SceneManager()
+        // self.metalView.delegate = sceneManager
+        //viewSceneManager.delegate = self
+        drawCallManager = DrawCallManager()
+        self.audioPlayer = AudioPlayerForMusicView()
+        //        self.observedStates()
+        //        undoRedoManager.observeStates(state: templateHandler.actionStates)
+        printLog("init \(self)")
+    }
+    
+    deinit{
+      
+            printLog("de-init \(self)")
+        playerControlsCancellables.removeAll()
+        modelPropertiesCancellables.removeAll()
+        actionStateCancellables.removeAll()
+        drawCallManager?.stopNotifyingDrawCall()
+    }
+    
+    func updateDBState(isDBDisabled : Bool){
+        self.isDBDisabled = isDBDisabled
+    }
+    
+    func start() {
+        self.animTimeLoopHandler?.animLoopState = .Stop
+        self.templateHandler.renderingState = .Animating
+        // self.timeLoopHandler.renderState = .Prepared
+        //  self.timeLoopHandler.renderState = .Playing
+        
+    }
+    
+    func stop() {
+        self.animTimeLoopHandler?.animLoopState = .Stop
+        self.templateHandler.renderingState = .Edit
+        // self.timeLoopHandler.renderState = .Stopped
+        
+    }
+    
+    func pause() {
+        self.animTimeLoopHandler?.animLoopState = .Stop
+        self.templateHandler.renderingState = .Edit
+        // self.timeLoopHandler.renderState = .Paused
+        
+    }
+    
+    func resume() {
+        self.animTimeLoopHandler?.animLoopState = .Stop
+        self.templateHandler.renderingState = .Animating
+        // self.timeLoopHandler.renderState = .Playing
+        
+    }
+    
+    
+    func setCurrentTemplate(templateInfo:TemplateInfo) {
+        templateHandler.currentTemplateInfo = templateInfo
+    }
+    
+    func errorOccured(msj:String) {
+        
+    }
+    // TODO: JM Initialise ThumbManager By Check Only If Its Nil Alredy Otherwise call updateThumb Directly
+    func captureThumbImage() async{
+        if thumbManagar == nil{
+            thumbManagar = ThumbManager(templateHandler: templateHandler)
+        }
+        thumbManagar?.textureCache.fetchIdealSize = CGSize(width: 500, height: 500)
+        await thumbManagar?.updatePageThumb(pageModel: templateHandler.currentPageModel!, currentTime: templateHandler.currentTemplateInfo!.thumbTime, size: CGSize(width: 500, height: 500))
+    }
+    
+    func prepareSceneUIView() {
+        guard let currentTemplateInfo = templateHandler.currentTemplateInfo else { return }
+        prepareSceneView(refSize: currentTemplateInfo.ratioSize, tempId: currentTemplateInfo.templateId, tempalteName: currentTemplateInfo.templateName)
+    }
+    private  func prepareSceneView(refSize:CGSize , tempId : Int , tempalteName : String) {
+        editorView?.prepareSceneUIView(size: refSize, tempId: tempId, tempName: tempalteName)
+        viewManager?.rootView = canvas.touchView
+        editorView?.gestureView.gestureHandler = viewManager
+        canvas.touchView?.viewManager = viewManager
+    }
+    
+    func prepareScene(templateID: Int,refSize:CGSize) {
+        UIStateManager.shared.progress = 0.0
+        
+        editorView?.prepareCanvasView(size: refSize)
+        editorView?.canvasView.backgroundColor = .clear
+        editorView?.prepareMetalView(size: refSize)
+        // viewSceneManager.rootView = canvas.touchView
+        
+        if TURN_ON_RENDERING {
+            guard let metalView =  canvas.mtkScene else  { errorOccured(msj: "metal View not created") ; return   }
+            
+            
+            //   drawCallManager.addListener(metalView.timeHandler)
+            //
+            sceneManager.setDisplay(metalView)
+        }
+        
+        //   Fetch template info from the database using templateID
+        guard let templateInfo = databaseManager.fetchTemplate(tempID: templateID, refSize: refSize)
+        else { errorOccured(msj: "Template Error \(templateID)"); return  }
+        
+        /* Updated By Neeshu */
+        if timeLoopHandler == nil || animTimeLoopHandler == nil{
+            timeLoopHandler = TimeLoopHnadler( timeLengthDuration: TimeInterval(templateInfo.totalDuration), drawCallManager: drawCallManager)
+            animTimeLoopHandler = AnimationTimeLoopHnadler(drawCallManager: drawCallManager!)
+            
+            self.sceneManager.setTimeLoopHandler(looper: timeLoopHandler!, animLooper: animTimeLoopHandler!)
+        }
+        
+        
+        
+        // save template info for future use
+        // setCurrentTemplate(templateInfo: templateInfo)
+        //            setCurrentSticker()
+        
+        //            modelsTable = databaseManager.templateHandler.childDict
+        /* Updated By Neeshu */
+        templateHandler = TemplateHandler()//databaseManager.templateHandler
+        templateHandler.childDict = databaseManager.childDict
+        databaseManager.cleanUp()
+        templateHandler.templateDuration = Double(templateInfo.totalDuration)
+        templateHandler.playerControls = timeLoopHandler
+        templateHandler.currentActionState.currentMusic = DBManager.shared.getMusicInfo(templateID: templateInfo.templateId)
+        thumbManagar = ThumbManager(templateHandler:templateHandler)
+        
+        // save template info for future use
+        setCurrentTemplate(templateInfo: templateInfo)
+        //        sceneManager.templateHandler = templateHandler
+        
+        
+        
+        //        Timer.scheduledTimer(withTimeInterval: 0.001, repeats: true) { timer in
+        //            if UIStateManager.shared.progress <= 0.25/*0.9*/ {
+        //                      UIStateManager.shared.progress += 0.001
+        //                  } else {
+        //                     
+        //                      timer.invalidate()
+        //                  }
+        //              }
+        //        sceneManager.observeActionStates()
+        self.audioPlayer?.setTemplateHandler(templateHandler: templateHandler)
+//        timelineView.setTemplateHandler(templateHandler: templateHandler)
+        if templateHandler.currentTemplateInfo?.isPremium == 1 && !UIStateManager.shared.isPremium && templateHandler.currentTemplateInfo?.category != "DRAFT"{
+            editorUIState = .Purchase
+        }
+        else{
+            editorUIState = .UseMe
+        }
+        
+        self.sceneManager.sceneProgress = { [weak self] progress in
+            print("Its Coming \(progress)")
+            DispatchQueue.main.async {
+                UIStateManager.shared.progress += progress
+            }
+        }
+        self.thumbManagar?.sceneProgress = { progress in
+            DispatchQueue.main.async {
+                UIStateManager.shared.progress += progress
+            }
+        }
+        checkAndDownloadFontsForTemplateId(templateId: templateID){ [self] in
+            Task {
+                
+                
+                
+                let didSucceed = await self.sceneManager.prepareSceneGraph(templateInfo: templateInfo)
+                
+                sceneManager.canRenderWatermark(!(UIStateManager.shared.isPremium || templateHandler.currentTemplateInfo?.isPremium == 1))
+                if didSucceed {
+                    /* Change By Neeshu */
+                    // There we removed the prvious template cancellable and add the new one.
+                    //                actionStateCancellables.removeAll()
+                    //                observedStates()
+                    observeCurrentActions()
+                    observePlayerControls()
+                }
+                
+                await thumbManagar?.updateThumbnail(id: 0)
+                canPlayScene?(didSucceed, nil) // HK** canplay to retru
+                
+                
+            }
+            
+        }
+    
+}
+    
+    
+
+    
+}
+
+extension MetalEngine{
+    func checkAndDownloadFontsForTemplateId(templateId: Int, completion: @escaping () -> Void) {
+        var fontsForTemplateList = DBManager.shared.getFontsForTemplate(templateID: templateId)
+        
+        Task {
+            let dispatchGroup = DispatchGroup()
+            for font in fontsForTemplateList{
+                if isFontInAssets(font: font){
+                    print("Font already exist in assets: \(font)")
+                }else if isFontInAppSpecificPath(font: font){
+                    print("Font already exist in app specific folder: \(font)")
+                }else{
+                    dispatchGroup.enter()
+                    await downloadFontFromServer(font: font) {
+                        dispatchGroup.leave()
+                    }
+                }
+            }
+            // Wait for all font downloads to finish
+            dispatchGroup.notify(queue: .main) {
+                completion() // Notify that font processing is complete
+            }
+        }
+    }
+    
+    func downloadFontFromServer(font: String, completion: @escaping () -> Void) async{
+        do{
+            let filePath = try await NetworkManager.shared.downloadFontFromServer(fontName: font)
+            
+            print("font downloaded from server path: \(filePath)")
+        }catch{
+            print("font not downloaded from server path")
+        }
+        completion()
+    }
+    
+    func isFontInAssets(font: String) -> Bool{
+        var actualFontName = font.components(separatedBy: ".").first
+        return FontDM.appFontArray.contains(where: { $0 == actualFontName})
+    }
+    
+    func isFontInAppSpecificPath(font: String) -> Bool{
+        if let fontInFile = AppFileManager.shared.fontAssets?.readDataFromFile(fileName: font){
+            return true
+        }else{
+            return false
+        }
+    }
+    
+    func isMusicInAppSpecificPath(music: String) -> Bool{
+        let musicPath = (music as NSString).lastPathComponent
+        if let musicInFile = AppFileManager.shared.music?.readDataFromFile(fileName: musicPath){
+            return true
+        }else if let localMusic = AppFileManager.shared.localAssets?.readDataFromFile(fileName: musicPath){
+            return true
+        }else{
+            return false
+        }
+    }
+}
+extension MetalEngine {
+    
+    func prepareScene3(templateID: Int, refSize: CGSize , loadThumbnails:Bool ) async {
+        
+        if fetchStatus == .Success || fetchStatus == .InProgress {
+            printLog("MTK_returning")
+            return
+        }
+        printLog("MTK_Preparing")
+        if let templateHandler = templateHandler ,  let templateid = templateHandler.currentTemplateInfo?.templateId , templateid == templateID {
+            fetchStatus = .Failed
+            return
+        }
+        
+        await MainActor.run {
+            fetchStatus = .InProgress
+            progressUnit = .zero
+        }
+        
+        await Task {
+        let allFontsChecked =  await checkAndDownloadFontsForTemplateId(templateId: templateID)
+        printLog("allFontsCheck")
+        }.value
+        
+        await Task {
+        let allMusicChecked =  await checkAndDownloadMusicForTemplateId(templateId: templateID)
+        printLog("allMusicsCheck")
+        }.value
+        
+        // 1️⃣ Fetch template info on main thread
+        let templateInfo: TemplateInfo? = await MainActor.run {
+            databaseManager.fetchTemplate(tempID: templateID, refSize: refSize)
+        }
+        
+        guard let templateInfo = templateInfo else {
+            await MainActor.run { errorOccured(msj: "Template Error \(templateID)") }
+            fetchStatus = .Failed
+            return
+        }
+        
+        await MainActor.run {
+            progressUnit = 0.1
+        }
+        // 2️⃣ Load Canvas on Main Thread
+        await MainActor.run {
+            loadCanvas(refSize: refSize)
+        }
+        
+        // 3️⃣ Turn On Metal Display in Background (Sequential)
+        await Task {
+            turnOnMetalDisplay()
+        }.value
+        
+        // 4️⃣ Initialize Time Loop Handlers in Background
+        await Task {
+            if timeLoopHandler == nil || animTimeLoopHandler == nil {
+                timeLoopHandler = TimeLoopHnadler(timeLengthDuration: TimeInterval(templateInfo.totalDuration), drawCallManager: drawCallManager)
+                animTimeLoopHandler = AnimationTimeLoopHnadler(drawCallManager: drawCallManager!)
+                sceneManager.setTimeLoopHandler(looper: timeLoopHandler!, animLooper: animTimeLoopHandler!)
+            }
+        }.value
+        
+        // 5️⃣ Prepare TemplateHandler in Background
+        let templateHandler = await Task { () -> TemplateHandler in
+            let handler = TemplateHandler()
+            handler.childDict = await MainActor.run { databaseManager.childDict }
+            await MainActor.run { databaseManager.cleanUp() }
+           
+            handler.templateDuration = Double(templateInfo.totalDuration)
+            handler.playerControls = timeLoopHandler
+            handler.currentActionState.currentMusic = DBManager.shared.getMusicInfo(templateID: templateInfo.templateId)
+            self.templateHandler = handler
+            setCurrentTemplate(templateInfo: templateInfo)
+
+            return handler
+        }.value
+        
+        await MainActor.run {
+            
+            self.audioPlayer?.setTemplateHandler(templateHandler: templateHandler)
+            if templateHandler.currentTemplateInfo?.isPremium == 1 && !UIStateManager.shared.isPremium && templateHandler.currentTemplateInfo?.category != "DRAFT"{
+                editorUIState = .Personalised
+            }
+            else{
+                editorUIState = .Personalised
+            }
+        }
+        
+        // 6️⃣ Download Fonts in Parallel
+        
+            // 7️⃣ Prepare Scene Graph (Background Task)
+            let didSucceed = await Task {
+                sceneManager.sceneProgress = { [weak self] progress in
+                    guard let self = self else { return }
+                        let currentProgress = progressUnit
+                        progressUnit = currentProgress + (CGFloat(progress) * ( loadThumbnails ? 0.45 : 0.9))
+                    DispatchQueue.main.async {
+                        UIStateManager.shared.progress += (progress * ( loadThumbnails ? 0.45 : 1.0))
+                    }
+                    
+                }
+                
+                let loaded = await sceneManager.prepareSceneGraph(templateInfo: templateInfo)
+                if loaded {
+                    sceneManager.canRenderWatermark(!(UIStateManager.shared.isPremium || templateInfo.isThisTemplateBought))
+
+                    observeCurrentActions()
+                    observePlayerControls()
+                    
+                    if loadThumbnails  {
+                        //                    if thumbManagar == nil {
+                        thumbManagar = ThumbManager(templateHandler: templateHandler)
+                        //                    }
+                        
+                        thumbManagar?.sceneProgress = { [weak self]  progress in
+                            guard let self = self else { return }
+                                let currentProgress = progressUnit
+                            progressUnit = currentProgress + (CGFloat(progress) * ( 0.45))
+
+                            DispatchQueue.main.async {
+                                UIStateManager.shared.progress += (progress * 0.45)
+                            }
+                        }
+                        await thumbManagar?.updateThumbnail(id: 0)
+                    }
+                }
+                return loaded
+            }.value
+      
+        sceneManager.sceneProgress = nil
+        thumbManagar?.sceneProgress = nil
+        if didSucceed {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                fetchStatus = .Success
+                UIStateManager.shared.progress = 0
+
+            }
+            return
+        }
+       
+    }
+    func prepareScene4(templateID: Int, refSize: CGSize , loadThumbnails:Bool , shouldCheckTempalteWaterrmark: Bool = false ) async {
+        
+        if fetchStatus == .Success || fetchStatus == .InProgress {
+            printLog("MTK_returning")
+            return
+        }
+        printLog("MTK_Preparing")
+        if let templateHandler = templateHandler ,  let templateid = templateHandler.currentTemplateInfo?.templateId , templateid == templateID {
+            fetchStatus = .Failed
+            return
+        }
+        
+        await MainActor.run {
+            fetchStatus = .InProgress
+            progressUnit = .zero
+        }
+        
+        await Task {
+        let allFontsChecked =  await checkAndDownloadFontsForTemplateId(templateId: templateID)
+        printLog("allFontsCheck")
+        }.value
+        
+        await Task {
+        let allMusicChecked =  await checkAndDownloadMusicForTemplateId(templateId: templateID)
+        printLog("allMusicsCheck")
+        }.value
+        
+        // 1️⃣ Fetch template info on main thread
+        let templateInfo: TemplateInfo? = await MainActor.run {
+            databaseManager.fetchTemplate(tempID: templateID, refSize: refSize)
+        }
+        
+        guard let templateInfo = templateInfo else {
+            await MainActor.run { errorOccured(msj: "Template Error \(templateID)") }
+            await MainActor.run {
+                fetchStatus = .Failed
+            }
+            return
+        }
+        
+        await MainActor.run {
+            progressUnit = 0.1
+        }
+        // 2️⃣ Load Canvas on Main Thread
+        await MainActor.run {
+            loadCanvas(refSize: refSize)
+        }
+        
+        // 3️⃣ Turn On Metal Display in Background (Sequential)
+        await Task {
+            turnOnMetalDisplay()
+        }.value
+        
+        // 4️⃣ Initialize Time Loop Handlers in Background
+        await Task {
+            if timeLoopHandler == nil || animTimeLoopHandler == nil {
+                timeLoopHandler = TimeLoopHnadler(timeLengthDuration: TimeInterval(templateInfo.totalDuration), drawCallManager: drawCallManager)
+                animTimeLoopHandler = AnimationTimeLoopHnadler(drawCallManager: drawCallManager!)
+                sceneManager.setTimeLoopHandler(looper: timeLoopHandler!, animLooper: animTimeLoopHandler!)
+            }
+        }.value
+        
+        // 5️⃣ Prepare TemplateHandler in Background
+        let templateHandler = await Task { () -> TemplateHandler in
+            let handler = TemplateHandler()
+            handler.childDict = await MainActor.run { databaseManager.childDict }
+            await MainActor.run { databaseManager.cleanUp() }
+           
+            handler.templateDuration = Double(templateInfo.totalDuration)
+            handler.playerControls = timeLoopHandler
+            handler.currentActionState.currentMusic = DBManager.shared.getMusicInfo(templateID: templateInfo.templateId)
+            self.templateHandler = handler
+            setCurrentTemplate(templateInfo: templateInfo)
+
+            return handler
+        }.value
+        
+        await MainActor.run {
+            
+            self.audioPlayer?.setTemplateHandler(templateHandler: templateHandler)
+//            if templateHandler.currentTemplateInfo?.isPremium == 1 && !UIStateManager.shared.isPremium && templateHandler.currentTemplateInfo?.category != "DRAFT"{
+//                editorUIState = .Personalised
+//            }
+//            else{
+//                editorUIState = .Personalised
+//            }
+        }
+        
+        // 6️⃣ Download Fonts in Parallel
+        
+            // 7️⃣ Prepare Scene Graph (Background Task)
+            let didSucceed = await Task {
+                sceneManager.sceneProgress = { [weak self] progress in
+                    guard let self = self else { return }
+                        let currentProgress = progressUnit
+                        progressUnit = currentProgress + (CGFloat(progress) * ( loadThumbnails ? 0.45 : 0.9))
+                    DispatchQueue.main.async {
+                        UIStateManager.shared.progress += (progress * ( loadThumbnails ? 0.45 : 1.0))
+                    }
+                    
+                }
+                
+                let loaded = await sceneManager.prepareSceneGraph(templateInfo: templateInfo)
+                if loaded {
+                    
+                    var canRenderWatermark : Bool = false
+                    canRenderWatermark = !(UIStateManager.shared.isPremium || templateInfo.isThisTemplateBought)
+                    if shouldCheckTempalteWaterrmark {
+                        canRenderWatermark = !(UIStateManager.shared.isPremium || !templateInfo.showWatermark.toBool())
+                    }
+                    sceneManager.canRenderWatermark(canRenderWatermark)
+
+
+                    observeCurrentActions()
+                    observePlayerControls()
+                    
+                    if loadThumbnails  {
+                        //                    if thumbManagar == nil {
+                        thumbManagar = ThumbManager(templateHandler: templateHandler)
+                        //                    }
+                        
+                        thumbManagar?.sceneProgress = { [weak self]  progress in
+                            guard let self = self else { return }
+                                let currentProgress = progressUnit
+                            progressUnit = currentProgress + (CGFloat(progress) * ( 0.45))
+
+                            DispatchQueue.main.async {
+                                UIStateManager.shared.progress += (progress * 0.45)
+                            }
+                        }
+                        await thumbManagar?.updateThumbnail(id: 0)
+                    }
+                }
+                return loaded
+            }.value
+      
+        sceneManager.sceneProgress = nil
+        thumbManagar?.sceneProgress = nil
+        if didSucceed {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                fetchStatus = .Success
+                UIStateManager.shared.progress = 0
+
+            }
+            return
+        }
+       
+    }
+    // var _enableUndoRedo : Bool = false
+    // var _enableDBUpdate : Bool = false
+    // var _enableViewManager : Bool = false
+    //
+    func loadCanvas(refSize:CGSize) {
+        guard let editorView = editorView else { return }
+        editorView.prepareCanvasView(size: refSize)
+        editorView.canvasView.backgroundColor = .systemBackground
+        editorView.prepareMetalView(size: refSize)
+    }
+    func turnOnMetalDisplay() {
+        guard let metalView = canvas.mtkScene else { errorOccured(msj: "metal View not created") ; return  }
+        sceneManager.setDisplay(metalView)
+    }
+    func prepareScene2(templateID: Int, refSize: CGSize , loadThumbnails:Bool ) async -> Bool {
+        await MainActor.run {
+            UIStateManager.shared.progress = 0.0
+        }
+        await Task {
+        let allFontsChecked =  await checkAndDownloadFontsForTemplateId(templateId: templateID)
+        printLog("allFontsCheck")
+        }.value
+        
+        // 1️⃣ Fetch template info on main thread
+        let templateInfo: TemplateInfo? = await MainActor.run {
+            databaseManager.fetchTemplate(tempID: templateID, refSize: refSize)
+        }
+        
+        guard let templateInfo = templateInfo else {
+            await MainActor.run { errorOccured(msj: "Template Error \(templateID)") }
+            return false
+        }
+        
+        await MainActor.run {
+            UIStateManager.shared.progress = 0.1
+        }
+        // 2️⃣ Load Canvas on Main Thread
+        await MainActor.run {
+            loadCanvas(refSize: refSize)
+        }
+        
+        // 3️⃣ Turn On Metal Display in Background (Sequential)
+        await Task {
+            turnOnMetalDisplay()
+        }.value
+        
+        // 4️⃣ Initialize Time Loop Handlers in Background
+        await Task {
+            if timeLoopHandler == nil || animTimeLoopHandler == nil {
+                timeLoopHandler = TimeLoopHnadler(timeLengthDuration: TimeInterval(templateInfo.totalDuration), drawCallManager: drawCallManager)
+                animTimeLoopHandler = AnimationTimeLoopHnadler(drawCallManager: drawCallManager!)
+                sceneManager.setTimeLoopHandler(looper: timeLoopHandler!, animLooper: animTimeLoopHandler!)
+            }
+        }.value
+        
+        // 5️⃣ Prepare TemplateHandler in Background
+        let templateHandler = await Task { () -> TemplateHandler in
+            let handler = TemplateHandler()
+            handler.childDict = await MainActor.run { databaseManager.childDict }
+            await MainActor.run { databaseManager.cleanUp() }
+           
+            handler.templateDuration = Double(templateInfo.totalDuration)
+            handler.playerControls = timeLoopHandler
+            handler.currentActionState.currentMusic = DBManager.shared.getMusicInfo(templateID: templateInfo.templateId)
+            self.templateHandler = handler
+            setCurrentTemplate(templateInfo: templateInfo)
+
+            return handler
+        }.value
+        
+        await MainActor.run {
+            
+            self.audioPlayer?.setTemplateHandler(templateHandler: templateHandler)
+            if templateHandler.currentTemplateInfo?.isPremium == 1 && !UIStateManager.shared.isPremium && templateHandler.currentTemplateInfo?.category != "DRAFT"{
+                editorUIState = .Personalised
+            }
+            else{
+                editorUIState = .Personalised
+            }
+        }
+        
+        // 6️⃣ Download Fonts in Parallel
+        
+            // 7️⃣ Prepare Scene Graph (Background Task)
+            let didSucceed = await Task {
+                sceneManager.sceneProgress = { progress in
+                    DispatchQueue.main.async {
+                        UIStateManager.shared.progress += (progress * ( loadThumbnails ? 0.45 : 0.9))
+                    }
+                }
+                
+                
+                
+                let loaded = await sceneManager.prepareSceneGraph(templateInfo: templateInfo)
+                if loaded {
+                    sceneManager.canRenderWatermark(!(UIStateManager.shared.isPremium || templateInfo.isThisTemplateBought))
+
+                    observeCurrentActions()
+                    observePlayerControls()
+                    
+                    if loadThumbnails  {
+                        //                    if thumbManagar == nil {
+                        thumbManagar = ThumbManager(templateHandler: templateHandler)
+                        //                    }
+                        
+                        thumbManagar?.sceneProgress = { progress in
+                            DispatchQueue.main.async {
+                                UIStateManager.shared.progress += (progress * 0.45)
+                            }
+                        }
+                        await thumbManagar?.updateThumbnail(id: 0)
+                    }
+                }
+                return loaded
+            }.value
+      
+        sceneManager.sceneProgress = nil
+        thumbManagar?.sceneProgress = nil
+        return true
+    }
+    func checkAndDownloadFontsForTemplateId(templateId: Int) async -> Bool {
+        
+        if await !isInternetAvailable()  {
+            return true
+        }
+        
+        let fontsForTemplateList = await MainActor.run {
+            DBManager.shared.getFontsForTemplate(templateID: templateId)
+        }
+        var allResults: [Bool] = []
+        await withTaskGroup(of: Bool.self) { group in
+            for font in fontsForTemplateList {
+                group.addTask { [weak self] in
+                    guard let self = self else { return false}
+                    if await isFontInAssets(font: font) {
+                        print("Font already exists in assets: \(font)")
+                        return true
+                    } else if await isFontInAppSpecificPath(font: font) {
+                        print("Font already exists in app-specific folder: \(font)")
+                        return true
+                    } else {
+                        return  await downloadFontFromServer2(font: font)
+                        
+                    }
+                }
+            }
+            
+            for await result in group {
+                allResults.append(result)
+            }
+        }
+        printLog("All Fonts Satisfied")
+        return fontsForTemplateList.count == allResults.count
+    }
+    
+    func checkAndDownloadMusicForTemplateId(templateId: Int) async -> Bool {
+        
+        if await !isInternetAvailable()  {
+            return true
+        }
+        
+        let musicsForTemplateList = await MainActor.run {
+            DBManager.shared.getMusicInfo(templateID: templateId)
+        }
+        var allResults: [Bool] = []
+        await withTaskGroup(of: Bool.self) { group in
+            group.addTask { [weak self] in
+                guard let self = self else { return false}
+                if await isMusicInAppSpecificPath(music: musicsForTemplateList?.musicPath ?? "") {
+                    print("Music already exists in app-specific folder: \(musicsForTemplateList?.musicPath ?? "")")
+                    return true
+                } else {
+                    return await downloadMusicFromServer2(musicPath: musicsForTemplateList?.musicPath ?? "")
+                    
+                }
+            }
+            
+            for await result in group {
+                allResults.append(result)
+            }
+        }
+        printLog("All Fonts Satisfied")
+        return allResults.first ?? true
+    }
+    
+    func downloadFontFromServer2(font: String) async -> Bool {
+        do{
+            let filePath = try await NetworkManager.shared.downloadFontFromServer(fontName: font)
+            print("font downloaded from server path: \(filePath)")
+            return true
+        }catch{
+            print("font not downloaded from server path")
+            return false
+        }
+    }
+    
+    func downloadMusicFromServer2(musicPath: String) async -> Bool {
+        do{
+            let filePath = try await NetworkManager.shared.downloadMusicFromServer(musicPath: musicPath)
+            print("music downloaded from server path: \(filePath)")
+            return true
+        }catch{
+            print("music not downloaded from server path")
+            return false
+        }
+    }
+    
+    func isInternetAvailable() async -> Bool {
+        let monitor = NWPathMonitor()
+        let queue = DispatchQueue(label: "InternetCheck")
+        let semaphore = DispatchSemaphore(value: 0)
+        var isConnected = false
+        
+        monitor.pathUpdateHandler = { path in
+            isConnected = path.status == .satisfied
+            semaphore.signal()
+        }
+        
+        monitor.start(queue: queue)
+        semaphore.wait() // Wait for the path update handler to execute
+        monitor.cancel() // Cancel immediately to release resources
+        
+        return isConnected
+    }
+}

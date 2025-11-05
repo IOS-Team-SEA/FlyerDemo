@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A04B45002EBB172D0049803F /* FMDB in Frameworks */ = {isa = PBXBuildFile; productRef = A04B44FF2EBB172D0049803F /* FMDB */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		A04B40E72EB88D130049803F /* FlyerDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FlyerDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -16,6 +20,16 @@
 			path = FlyerDemo;
 			sourceTree = "<group>";
 		};
+		A04B41812EB8B7EA0049803F /* PackageLevel */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = PackageLevel;
+			sourceTree = "<group>";
+		};
+		A04B41822EB8B7F40049803F /* AppLevel */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AppLevel;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -23,6 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A04B45002EBB172D0049803F /* FMDB in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -32,6 +47,8 @@
 		A04B40DE2EB88D130049803F = {
 			isa = PBXGroup;
 			children = (
+				A04B41822EB8B7F40049803F /* AppLevel */,
+				A04B41812EB8B7EA0049803F /* PackageLevel */,
 				A04B40E92EB88D130049803F /* FlyerDemo */,
 				A04B40E82EB88D130049803F /* Products */,
 			);
@@ -62,9 +79,12 @@
 			);
 			fileSystemSynchronizedGroups = (
 				A04B40E92EB88D130049803F /* FlyerDemo */,
+				A04B41812EB8B7EA0049803F /* PackageLevel */,
+				A04B41822EB8B7F40049803F /* AppLevel */,
 			);
 			name = FlyerDemo;
 			packageProductDependencies = (
+				A04B44FF2EBB172D0049803F /* FMDB */,
 			);
 			productName = FlyerDemo;
 			productReference = A04B40E72EB88D130049803F /* FlyerDemo.app */;
@@ -94,6 +114,9 @@
 			);
 			mainGroup = A04B40DE2EB88D130049803F;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A04B44FE2EBB172D0049803F /* XCRemoteSwiftPackageReference "fmdb" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A04B40E82EB88D130049803F /* Products */;
 			projectDirPath = "";
@@ -341,6 +364,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A04B44FE2EBB172D0049803F /* XCRemoteSwiftPackageReference "fmdb" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ccgus/fmdb";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.7.12;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A04B44FF2EBB172D0049803F /* FMDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A04B44FE2EBB172D0049803F /* XCRemoteSwiftPackageReference "fmdb" */;
+			productName = FMDB;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A04B40DF2EB88D130049803F /* Project object */;
 }
