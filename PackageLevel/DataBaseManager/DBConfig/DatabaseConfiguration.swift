@@ -21,6 +21,7 @@ protocol DBLogger {
     func logInfo(_ message: String)
     func logError(_ message: String)
     func getDBPath() -> URL?
+    func getDBName() -> String
     func getBaseSize() -> CGSize
     func getThumnailPath() -> URL?
     func getMyDesignsPath() -> URL?

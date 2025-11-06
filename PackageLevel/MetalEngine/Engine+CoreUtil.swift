@@ -130,12 +130,12 @@ extension MetalEngine {
     func changeSize(newBaseSize:CGSize) {
         isLoading = true
         self.baseSize = newBaseSize
-        BASE_SIZE = newBaseSize
+        engineConfig.BASE_SIZE = newBaseSize
 //        templateHandler.setCurrentModel(id: -1) // JDCHange
         shouldRenderOnScene = false
             let ratioId = templateHandler.currentTemplateInfo?.ratioId
             let ratioModel = DBManager.shared.getRatioDbModel(ratioId: ratioId!)
-            if let ratio = templateHandler.currentTemplateInfo?.ratioInfo.getRatioInfo(ratioInfo: ratioModel!, refSize: newBaseSize){
+            if let ratio = templateHandler.currentTemplateInfo?.ratioInfo.getRatioInfo(ratioInfo: ratioModel!, refSize: newBaseSize, logger: logger){
                 let oldSize = templateHandler.currentTemplateInfo?.ratioSize
                 let newRefSize = ratio.ratioSize
                 updateRatioOFPage2(newPageSize: newRefSize,newBaseSize: newBaseSize)
@@ -162,7 +162,7 @@ extension MetalEngine {
     
     func updateRatioOFPage2(newPageSize:CGSize , newBaseSize : CGSize){
         guard let templateInfo = templateHandler.currentTemplateInfo else{
-            printLog("Template info object is not found to change ratio")
+            logger.printLog("Template info object is not found to change ratio")
             return
         }
         for page in templateInfo.pageInfo{
@@ -176,7 +176,7 @@ extension MetalEngine {
     
     func updateRatioOFPage(newPageSize:CGSize ){
         guard let templateInfo = templateHandler.currentTemplateInfo else{
-            printLog("Template info object is not found to change ratio")
+            logger.printLog("Template info object is not found to change ratio")
             return
         }
         for page in templateInfo.pageInfo{

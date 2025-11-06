@@ -30,7 +30,7 @@ struct RatioInfo:RatioModelProtocol{
         return CGSize(width: CGFloat(ratioWidth), height: CGFloat(ratioHeight))
     }
     
-    mutating func setRatioModel(ratioInfo: DBRatioTableModel , refSize:CGSize) {
+    mutating func setRatioModel(ratioInfo: DBRatioTableModel , refSize:CGSize, logger: DBLogger?) {
          // Set all values from the provided ratioInfo
          self.id = ratioInfo.id
          self.category = ratioInfo.category
@@ -41,7 +41,7 @@ struct RatioInfo:RatioModelProtocol{
         self.ratioHeight = ratioInfo.ratioHeight.toFloat()
         
         let newSize = getProportionalSize(currentRatio: CGSize(width: CGFloat(ratioWidth), height: CGFloat(ratioHeight)), oldSize: refSize)
-        printLog("NEWSIZE:",newSize)
+        logger?.printLog("NEWSIZE: \(newSize)")
         self.ratioWidth = Float(newSize.width)
         self.ratioHeight = Float(newSize.height)
         
@@ -63,7 +63,7 @@ struct RatioInfo:RatioModelProtocol{
         ratioModel.isPremium = self.isPremium
         return ratioModel
     }
-    func getRatioInfo(ratioInfo: DBRatioTableModel , refSize:CGSize)->RatioInfo{
+    func getRatioInfo(ratioInfo: DBRatioTableModel , refSize:CGSize, logger: PackageLogger?)->RatioInfo{
         var ratio = RatioInfo()
         ratio.id = ratioInfo.id
         ratio.category = ratioInfo.category
@@ -74,7 +74,7 @@ struct RatioInfo:RatioModelProtocol{
         ratio.ratioHeight = ratioInfo.ratioHeight.toFloat()
        
        let newSize = getProportionalSize(currentRatio: CGSize(width: CGFloat(ratio.ratioWidth), height: CGFloat(ratio.ratioHeight)), oldSize: refSize)
-       printLog("NEWSIZE:",newSize)
+        logger?.printLog("NEWSIZE: \(newSize)")
         ratio.ratioWidth = Float(newSize.width)
         ratio.ratioHeight = Float(newSize.height)
        

@@ -43,25 +43,34 @@ class ActionStates: ObservableObject {
     @Published var didPersonalizeTappedFromSaveNEdit : Bool = false
     @Published var zoomEditView : ZoomEditView = .scaleUp
     
+    var logger: PackageLogger?
+    var actionStateConfig: EngineConfiguration?
+    
+    func setPackageLogger(logger: PackageLogger, actionStateConfig: EngineConfiguration){
+        self.logger = logger
+        self.actionStateConfig = actionStateConfig
+        snappingMode = getSnappingValue()
+    }
+    
     func getSnappingValue() -> SnappingMode{
-        if PersistentStorage.snappingMode == 0{
+        if actionStateConfig?.getSnappingMode == 0{
             return .off
         }
-        else if PersistentStorage.snappingMode == 1{
+        else if actionStateConfig?.getSnappingMode == 1{
             return .basic
         }
-        else if PersistentStorage.snappingMode == 2{
+        else if actionStateConfig?.getSnappingMode == 2{
             return .advanced
         }
         return .off
     }
     
     init() {
-        snappingMode = getSnappingValue()
+//        snappingMode = getSnappingValue()
     }
     
     deinit {
-        printLog("de-init \(self)")
+        logger?.printLog("de-init \(self)")
     }
     
     @Published var showPlayPauseButton : Bool = true

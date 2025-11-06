@@ -46,7 +46,7 @@ extension SceneComposable {
         let textChild = MWatermark(model: text)
         var textProperties = text.textProperty
         textProperties.letterSpacing = 0
-        let texture = Conversion.loadTexture(image: text.createImage( text: text.text, properties: textProperties, refSize: CGSize(width: CGFloat(text.width), height:  CGFloat(text.height)), maxWidth: CGFloat(text.width), maxHeight: .infinity, contentScaleFactor: sceneConfig!.contentScaleFactor)!, flip: false )
+        let texture = Conversion.loadTexture(image: text.createImage( text: text.text, properties: textProperties, refSize: CGSize(width: CGFloat(text.width), height:  CGFloat(text.height)), maxWidth: CGFloat(text.width), maxHeight: .infinity, contentScaleFactor: sceneConfig!.contentScaleFactor, logger: logger)!, flip: false )
         textChild.mContentType = 2
         textChild.setTexture(texture: texture!)
         textChild.setmOpacity(opacity: Conversion.setOpacityForMetalView(value: (text.modelOpacity)))
@@ -288,7 +288,7 @@ extension SceneComposable {
             
             var properties = textInfo.textProperty
             
-            if let image = textInfo.createImage(thumbUpdate : updateThumb, keepSameFont : false, text: textInfo.text, properties: properties, refSize: textInfo.baseFrame.size, maxWidth: textInfo.baseFrame.size.width, maxHeight: .infinity, contentScaleFactor: sceneConfig!.contentScaleFactor) {
+            if let image = textInfo.createImage(thumbUpdate : updateThumb, keepSameFont : false, text: textInfo.text, properties: properties, refSize: textInfo.baseFrame.size, maxWidth: textInfo.baseFrame.size.width, maxHeight: .infinity, contentScaleFactor: sceneConfig!.contentScaleFactor, logger: logger) {
                 
                 let texture = Conversion.loadTexture(image: image, flip: false )
                 textChild.mContentType = 2

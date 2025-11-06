@@ -11,7 +11,7 @@ class MScene  : MParent {
        
     var _animCurrentTime : Float = 0 {
         didSet {
-            printLog("animCTime:",_animCurrentTime)
+            logger?.printLog("animCTime: \(_animCurrentTime)")
         }
     }
     

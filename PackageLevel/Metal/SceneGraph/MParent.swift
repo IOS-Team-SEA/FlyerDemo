@@ -66,7 +66,7 @@ class MParent:MChild{
     }
     
      init(model: ParentModel) {
-        super.init(model: model)
+         super.init(model: model)
        
          //createEmptyTexture(drawableSize: context.drawableSize)
         
@@ -264,9 +264,9 @@ extension MParent{
         for ord in order...at{
            
             let child = childern[ord]
-            printLog("scene decrease old Order \(child.mOrder)")
+            logger?.printLog("scene decrease old Order \(child.mOrder)")
             child.mOrder -= 1
-            printLog("scene decrease new Order \(child.mOrder)")
+            logger?.printLog("scene decrease new Order \(child.mOrder)")
 
         }
     }
@@ -288,7 +288,7 @@ extension MParent{
     
     func increaseChildOrderInParent(order:Int,at:Int){
         if order >= childern.count{
-            printLog("Oreder is grater than childCount \(order)->\(childern.count)")
+            logger?.printLog("Oreder is grater than childCount \(order)->\(childern.count)")
 
             return
         }
@@ -296,9 +296,9 @@ extension MParent{
         for ord in order...at{
             
             let child = childern[ord]
-            printLog("scene increase old Order \(child.mOrder)")
+            logger?.printLog("scene increase old Order \(child.mOrder)")
             child.mOrder += 1
-            printLog("scene increase new Order \(child.mOrder)")
+            logger?.printLog("scene increase new Order \(child.mOrder)")
 
         }
     }

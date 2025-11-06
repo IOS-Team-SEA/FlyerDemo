@@ -12,6 +12,7 @@ import FMDB
 public class DBInterface : NSObject {
     
     var logger: DBLogger?
+    var engineConfig: EngineConfiguration?
     
     public let databaseQueue = DispatchQueue(label: "DB_SERIAL_Q")
    var semaphore = DispatchSemaphore(value: 1)
@@ -80,8 +81,9 @@ public class DBInterface : NSObject {
     
 
     
-    func setDBLogger(logger: DBLogger){
+    func setDBLogger(logger: DBLogger, engineConfig: EngineConfiguration){
         self.logger = logger
+        self.engineConfig = engineConfig
     }
 
     

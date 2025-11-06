@@ -133,7 +133,7 @@ class DBMediator : DictCacheProtocol  {
                     dbManager.logger?.printLog(" BaseModel found but not textModel")
                     return nil
                 }
-                textInfo.setTextModel(textModel: textModel)
+                textInfo.setTextModel(textModel: textModel, engineConfig: dbManager.engineConfig)
                 if onlinePreview { addModel(model: textInfo) ; }
                 return textInfo
             }
@@ -427,7 +427,7 @@ class DBMediator : DictCacheProtocol  {
             return nil
         }
         if let dbRatioModel = dbManager.getRatioDbModel(ratioId: templateModel.ratioId){
-            tempInfo.ratioInfo.setRatioModel(ratioInfo: dbRatioModel, refSize: refSize)
+            tempInfo.ratioInfo.setRatioModel(ratioInfo: dbRatioModel, refSize: refSize, logger: dbManager.logger)
         }
         tempInfo.setTemplateModel(with: templateModel)
         let ListOfPages = dbManager.getActivePagesList(templateId: tempID)

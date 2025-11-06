@@ -22,7 +22,7 @@ protocol Renderable {
 //    var renderPipelineDescriptor : MTLRenderPipelineDescriptor! {get set}
 //    var vertexDescriptor : MTLVertexDescriptor! {get}
     var geometry:MeshGeometry { get set }
-    
+    var logger: PackageLogger? { get }
     
 //    func buildRenderPipeline(pipelineInfo:MRenderPipelineInfo)
     func preRenderCalculation()
@@ -58,7 +58,7 @@ extension Renderable {
     
     func renderOnParent(parentEncoder: MTLRenderCommandEncoder) {
         guard let pipelineState = renderPipelineState else {
-            logError("pipeline state is nil \(self)")
+            logger?.logError("pipeline state is nil \(self)")
             return
         }
         if canRender {

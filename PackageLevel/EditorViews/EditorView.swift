@@ -10,6 +10,7 @@ import UIKit
 class EditorView : UIView {
     
     var logger: PackageLogger
+    var vmConfig: ViewManagerConfiguration
     
     deinit {
         logger.printLog("de-init \(self)")
@@ -43,8 +44,9 @@ class EditorView : UIView {
 //        self.clipsToBounds = true
 //    }
     
-    init(frame: CGRect, logger: PackageLogger) {
+    init(frame: CGRect, logger: PackageLogger, vmConfig: ViewManagerConfiguration) {
         self.logger = logger   // must initialize before calling super
+        self.vmConfig = vmConfig
         super.init(frame: frame)
         setupView()
     }
@@ -98,7 +100,7 @@ class EditorView : UIView {
     func prepareSceneUIView(size:CGSize , tempId : Int , tempName : String) {
         let center = CGPoint(x: self.canvasView.bounds.width/2, y: self.canvasView.bounds.height/2)
 
-        let sceneView = SceneView(id: tempId, name: tempName)
+        let sceneView = SceneView(id: tempId, name: tempName, logger: logger, vmConfig: vmConfig)
         sceneView.frame = CGRect(x: 0, y: 0, width: self.canvasView.frame.size.width, height: self.canvasView.frame.size.height)
         sceneView.center = center
 //        sceneView.autoresizingMask = [.flexibleWidth , .flexibleHeight]

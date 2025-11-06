@@ -11,6 +11,18 @@ import UIKit
 import Combine
 import Network
 
+enum EditorUIStates {
+    
+    case SelectThumbnail
+    case UseMe
+    case Preview
+    case Purchase
+//    case ReelsPreview
+//    case LoadingPreview
+    case MultipleSelectMode
+    case Personalised
+}
+
 //@MainActor
 class MetalEngine : ObservableObject, TemplateObserversProtocol , ActionStateObserversProtocol , PlayerControlsReadObservableProtocol  {
     
@@ -34,9 +46,7 @@ class MetalEngine : ObservableObject, TemplateObserversProtocol , ActionStateObs
     
     var modelPropertiesCancellables: Set<AnyCancellable> = Set<AnyCancellable>()
     var actionStateCancellables: Set<AnyCancellable> = Set<AnyCancellable>()
-    
-    @Injected var analyticsLogger : AnalyticsLogger
-    
+        
     var TURN_ON_RENDERING = true
     
     var editorView : EditorView?
@@ -46,12 +56,17 @@ class MetalEngine : ObservableObject, TemplateObserversProtocol , ActionStateObs
     var editorUIState : EditorUIStates = .UseMe
     let minStartTime: Float = 3.0
     var thumbManagar : ThumbManager?
-    
+    var logger: PackageLogger
+    var sceneConfig: SceneConfiguration
+    var resourceProvider: TextureResourceProvider
+    var engineConfig: EngineConfiguration
+    var layerConfig: LayersConfiguration
+    var vmConfig: ViewManagerConfiguration
 //    @Published var showDrop : Drop? = nil
     
     
     func getEditorView(frame:CGRect) {
-        let editorView = EditorView(frame: frame)
+        let editorView = EditorView(frame: frame, logger: logger, vmConfig: vmConfig)
         // viewSceneManager.setEditorView(editorView) TODO: JD Pending
         self.editorView = editorView
         editorView.backgroundColor = .clear
@@ -107,6 +122,7 @@ class MetalEngine : ObservableObject, TemplateObserversProtocol , ActionStateObs
     var layersManager : LayersViewModel2  {
         let layerManager = LayersViewModel2()
         layerManager.setTemplateHandler(th: templateHandler)
+        layerManager.setPackageLogger(logger: logger, layersConfig: layerConfig)
         //        layerManager.engine = self
         return layerManager
     }
@@ -117,25 +133,33 @@ class MetalEngine : ObservableObject, TemplateObserversProtocol , ActionStateObs
     
     //MARK: - Init
     
-    init() {
+    init(logger: PackageLogger, resourceProvider: TextureResourceProvider, engineConfig: EngineConfiguration, sceneConfig: SceneConfiguration, layerConfig: LayersConfiguration, vmConfig: ViewManagerConfiguration) {
         
         //        displayView = DisplayView(frame: .zero)
-       
-        self.undoRedoManager = UndoRedoManager()//UndoRedoManager.shared
-        self.undoRedoExecutor = UndoRedoExecuter()
-        self.sceneManager = SceneManager()
+        self.logger = logger
+        self.engineConfig = engineConfig
+        self.resourceProvider = resourceProvider
+        self.sceneConfig = sceneConfig
+        self.layerConfig = layerConfig
+        self.vmConfig = vmConfig
+        self.undoRedoManager = UndoRedoManager(logger: logger)//UndoRedoManager.shared
+        self.undoRedoExecutor = UndoRedoExecuter(logger: logger)
+        self.sceneManager = SceneManager(resourceProvider: resourceProvider, logger: logger)
         // self.metalView.delegate = sceneManager
         //viewSceneManager.delegate = self
-        drawCallManager = DrawCallManager()
+        drawCallManager = DrawCallManager(logger: logger)
         self.audioPlayer = AudioPlayerForMusicView()
+        self.audioPlayer?.setPackageLogger(logger: logger, engineConfig: engineConfig)
         //        self.observedStates()
         //        undoRedoManager.observeStates(state: templateHandler.actionStates)
-        printLog("init \(self)")
+        logger.printLog("init \(self)")
+        Conversion.setPackageLogger(logger: logger)
+        DataSourceRepository.shared.setPackageLogger(logger: logger)
     }
     
     deinit{
       
-            printLog("de-init \(self)")
+        logger.printLog("de-init \(self)")
         playerControlsCancellables.removeAll()
         modelPropertiesCancellables.removeAll()
         actionStateCancellables.removeAll()
@@ -186,7 +210,8 @@ class MetalEngine : ObservableObject, TemplateObserversProtocol , ActionStateObs
     // TODO: JM Initialise ThumbManager By Check Only If Its Nil Alredy Otherwise call updateThumb Directly
     func captureThumbImage() async{
         if thumbManagar == nil{
-            thumbManagar = ThumbManager(templateHandler: templateHandler)
+            thumbManagar = ThumbManager(templateHandler: templateHandler, resourceProvider: resourceProvider, logger: logger)
+            thumbManagar?.sceneConfig = sceneConfig
         }
         thumbManagar?.textureCache.fetchIdealSize = CGSize(width: 500, height: 500)
         await thumbManagar?.updatePageThumb(pageModel: templateHandler.currentPageModel!, currentTime: templateHandler.currentTemplateInfo!.thumbTime, size: CGSize(width: 500, height: 500))
@@ -204,8 +229,8 @@ class MetalEngine : ObservableObject, TemplateObserversProtocol , ActionStateObs
     }
     
     func prepareScene(templateID: Int,refSize:CGSize) {
-        UIStateManager.shared.progress = 0.0
-        
+//        UIStateManager.shared.progress = 0.0
+        engineConfig.progress = 0.0
         editorView?.prepareCanvasView(size: refSize)
         editorView?.canvasView.backgroundColor = .clear
         editorView?.prepareMetalView(size: refSize)
@@ -228,7 +253,7 @@ class MetalEngine : ObservableObject, TemplateObserversProtocol , ActionStateObs
         if timeLoopHandler == nil || animTimeLoopHandler == nil{
             timeLoopHandler = TimeLoopHnadler( timeLengthDuration: TimeInterval(templateInfo.totalDuration), drawCallManager: drawCallManager)
             animTimeLoopHandler = AnimationTimeLoopHnadler(drawCallManager: drawCallManager!)
-            
+            animTimeLoopHandler?.setPackageLogger(logger: logger)
             self.sceneManager.setTimeLoopHandler(looper: timeLoopHandler!, animLooper: animTimeLoopHandler!)
         }
         
@@ -241,31 +266,20 @@ class MetalEngine : ObservableObject, TemplateObserversProtocol , ActionStateObs
         //            modelsTable = databaseManager.templateHandler.childDict
         /* Updated By Neeshu */
         templateHandler = TemplateHandler()//databaseManager.templateHandler
+        templateHandler.setPackageLogger(logger: logger, engineConfig: engineConfig)
         templateHandler.childDict = databaseManager.childDict
         databaseManager.cleanUp()
         templateHandler.templateDuration = Double(templateInfo.totalDuration)
         templateHandler.playerControls = timeLoopHandler
         templateHandler.currentActionState.currentMusic = DBManager.shared.getMusicInfo(templateID: templateInfo.templateId)
-        thumbManagar = ThumbManager(templateHandler:templateHandler)
-        
+        thumbManagar = ThumbManager(templateHandler:templateHandler, resourceProvider: resourceProvider, logger: logger)
+        thumbManagar?.sceneConfig = sceneConfig
         // save template info for future use
         setCurrentTemplate(templateInfo: templateInfo)
-        //        sceneManager.templateHandler = templateHandler
-        
-        
-        
-        //        Timer.scheduledTimer(withTimeInterval: 0.001, repeats: true) { timer in
-        //            if UIStateManager.shared.progress <= 0.25/*0.9*/ {
-        //                      UIStateManager.shared.progress += 0.001
-        //                  } else {
-        //                     
-        //                      timer.invalidate()
-        //                  }
-        //              }
-        //        sceneManager.observeActionStates()
+
         self.audioPlayer?.setTemplateHandler(templateHandler: templateHandler)
 //        timelineView.setTemplateHandler(templateHandler: templateHandler)
-        if templateHandler.currentTemplateInfo?.isPremium == 1 && !UIStateManager.shared.isPremium && templateHandler.currentTemplateInfo?.category != "DRAFT"{
+        if templateHandler.currentTemplateInfo?.isPremium == 1 && !engineConfig.isPremium && templateHandler.currentTemplateInfo?.category != "DRAFT"{
             editorUIState = .Purchase
         }
         else{
@@ -275,12 +289,14 @@ class MetalEngine : ObservableObject, TemplateObserversProtocol , ActionStateObs
         self.sceneManager.sceneProgress = { [weak self] progress in
             print("Its Coming \(progress)")
             DispatchQueue.main.async {
-                UIStateManager.shared.progress += progress
+//                UIStateManager.shared.progress += progress
+                self?.engineConfig.progress += progress
             }
         }
         self.thumbManagar?.sceneProgress = { progress in
             DispatchQueue.main.async {
-                UIStateManager.shared.progress += progress
+//                UIStateManager.shared.progress += progress
+                self.engineConfig.progress += progress
             }
         }
         checkAndDownloadFontsForTemplateId(templateId: templateID){ [self] in
@@ -290,12 +306,8 @@ class MetalEngine : ObservableObject, TemplateObserversProtocol , ActionStateObs
                 
                 let didSucceed = await self.sceneManager.prepareSceneGraph(templateInfo: templateInfo)
                 
-                sceneManager.canRenderWatermark(!(UIStateManager.shared.isPremium || templateHandler.currentTemplateInfo?.isPremium == 1))
+                sceneManager.canRenderWatermark(!(engineConfig.isPremium || templateHandler.currentTemplateInfo?.isPremium == 1))
                 if didSucceed {
-                    /* Change By Neeshu */
-                    // There we removed the prvious template cancellable and add the new one.
-                    //                actionStateCancellables.removeAll()
-                    //                observedStates()
                     observeCurrentActions()
                     observePlayerControls()
                 }
@@ -342,7 +354,7 @@ extension MetalEngine{
     
     func downloadFontFromServer(font: String, completion: @escaping () -> Void) async{
         do{
-            let filePath = try await NetworkManager.shared.downloadFontFromServer(fontName: font)
+            let filePath = try await engineConfig.downloadFontFromServer(fontName: font)
             
             print("font downloaded from server path: \(filePath)")
         }catch{
@@ -357,7 +369,7 @@ extension MetalEngine{
     }
     
     func isFontInAppSpecificPath(font: String) -> Bool{
-        if let fontInFile = AppFileManager.shared.fontAssets?.readDataFromFile(fileName: font){
+        if let fontInFile = engineConfig.readDataFromFileFromFontAssets(fileName: font){
             return true
         }else{
             return false
@@ -366,9 +378,9 @@ extension MetalEngine{
     
     func isMusicInAppSpecificPath(music: String) -> Bool{
         let musicPath = (music as NSString).lastPathComponent
-        if let musicInFile = AppFileManager.shared.music?.readDataFromFile(fileName: musicPath){
+        if let musicInFile = engineConfig.readDataFromFileFromMusic(fileName: musicPath){
             return true
-        }else if let localMusic = AppFileManager.shared.localAssets?.readDataFromFile(fileName: musicPath){
+        }else if let localMusic = engineConfig.readDataFromFileLocalMusic(fileName: musicPath){
             return true
         }else{
             return false
@@ -380,10 +392,10 @@ extension MetalEngine {
     func prepareScene3(templateID: Int, refSize: CGSize , loadThumbnails:Bool ) async {
         
         if fetchStatus == .Success || fetchStatus == .InProgress {
-            printLog("MTK_returning")
+            logger.printLog("MTK_returning")
             return
         }
-        printLog("MTK_Preparing")
+        logger.printLog("MTK_Preparing")
         if let templateHandler = templateHandler ,  let templateid = templateHandler.currentTemplateInfo?.templateId , templateid == templateID {
             fetchStatus = .Failed
             return
@@ -396,12 +408,12 @@ extension MetalEngine {
         
         await Task {
         let allFontsChecked =  await checkAndDownloadFontsForTemplateId(templateId: templateID)
-        printLog("allFontsCheck")
+            logger.printLog("allFontsCheck")
         }.value
         
         await Task {
         let allMusicChecked =  await checkAndDownloadMusicForTemplateId(templateId: templateID)
-        printLog("allMusicsCheck")
+            logger.printLog("allMusicsCheck")
         }.value
         
         // 1️⃣ Fetch template info on main thread
@@ -432,7 +444,9 @@ extension MetalEngine {
         await Task {
             if timeLoopHandler == nil || animTimeLoopHandler == nil {
                 timeLoopHandler = TimeLoopHnadler(timeLengthDuration: TimeInterval(templateInfo.totalDuration), drawCallManager: drawCallManager)
+                timeLoopHandler?.setPackagelogger(logger: logger)
                 animTimeLoopHandler = AnimationTimeLoopHnadler(drawCallManager: drawCallManager!)
+                animTimeLoopHandler?.setPackageLogger(logger: logger)
                 sceneManager.setTimeLoopHandler(looper: timeLoopHandler!, animLooper: animTimeLoopHandler!)
             }
         }.value
@@ -440,6 +454,7 @@ extension MetalEngine {
         // 5️⃣ Prepare TemplateHandler in Background
         let templateHandler = await Task { () -> TemplateHandler in
             let handler = TemplateHandler()
+            handler.setPackageLogger(logger: logger, engineConfig: engineConfig)
             handler.childDict = await MainActor.run { databaseManager.childDict }
             await MainActor.run { databaseManager.cleanUp() }
            
@@ -455,7 +470,7 @@ extension MetalEngine {
         await MainActor.run {
             
             self.audioPlayer?.setTemplateHandler(templateHandler: templateHandler)
-            if templateHandler.currentTemplateInfo?.isPremium == 1 && !UIStateManager.shared.isPremium && templateHandler.currentTemplateInfo?.category != "DRAFT"{
+            if templateHandler.currentTemplateInfo?.isPremium == 1 && !engineConfig.isPremium && templateHandler.currentTemplateInfo?.category != "DRAFT"{
                 editorUIState = .Personalised
             }
             else{
@@ -472,21 +487,23 @@ extension MetalEngine {
                         let currentProgress = progressUnit
                         progressUnit = currentProgress + (CGFloat(progress) * ( loadThumbnails ? 0.45 : 0.9))
                     DispatchQueue.main.async {
-                        UIStateManager.shared.progress += (progress * ( loadThumbnails ? 0.45 : 1.0))
+//                        UIStateManager.shared.progress += (progress * ( loadThumbnails ? 0.45 : 1.0))
+                        self.engineConfig.progress += (progress * ( loadThumbnails ? 0.45 : 1.0))
                     }
                     
                 }
                 
                 let loaded = await sceneManager.prepareSceneGraph(templateInfo: templateInfo)
                 if loaded {
-                    sceneManager.canRenderWatermark(!(UIStateManager.shared.isPremium || templateInfo.isThisTemplateBought))
+                    sceneManager.canRenderWatermark(!(engineConfig.isPremium || templateInfo.isThisTemplateBought))
 
                     observeCurrentActions()
                     observePlayerControls()
                     
                     if loadThumbnails  {
                         //                    if thumbManagar == nil {
-                        thumbManagar = ThumbManager(templateHandler: templateHandler)
+                        thumbManagar = ThumbManager(templateHandler: templateHandler, resourceProvider: resourceProvider, logger: logger)
+                        thumbManagar?.sceneConfig = sceneConfig
                         //                    }
                         
                         thumbManagar?.sceneProgress = { [weak self]  progress in
@@ -495,7 +512,8 @@ extension MetalEngine {
                             progressUnit = currentProgress + (CGFloat(progress) * ( 0.45))
 
                             DispatchQueue.main.async {
-                                UIStateManager.shared.progress += (progress * 0.45)
+//                                UIStateManager.shared.progress += (progress * 0.45)
+                                self.engineConfig.progress += (progress * 0.45)
                             }
                         }
                         await thumbManagar?.updateThumbnail(id: 0)
@@ -511,8 +529,8 @@ extension MetalEngine {
                 guard let self = self else { return }
                 
                 fetchStatus = .Success
-                UIStateManager.shared.progress = 0
-
+//                UIStateManager.shared.progress = 0
+                engineConfig.progress = 0
             }
             return
         }
@@ -521,10 +539,10 @@ extension MetalEngine {
     func prepareScene4(templateID: Int, refSize: CGSize , loadThumbnails:Bool , shouldCheckTempalteWaterrmark: Bool = false ) async {
         
         if fetchStatus == .Success || fetchStatus == .InProgress {
-            printLog("MTK_returning")
+            logger.printLog("MTK_returning")
             return
         }
-        printLog("MTK_Preparing")
+        logger.printLog("MTK_Preparing")
         if let templateHandler = templateHandler ,  let templateid = templateHandler.currentTemplateInfo?.templateId , templateid == templateID {
             fetchStatus = .Failed
             return
@@ -537,12 +555,12 @@ extension MetalEngine {
         
         await Task {
         let allFontsChecked =  await checkAndDownloadFontsForTemplateId(templateId: templateID)
-        printLog("allFontsCheck")
+            logger.printLog("allFontsCheck")
         }.value
         
         await Task {
         let allMusicChecked =  await checkAndDownloadMusicForTemplateId(templateId: templateID)
-        printLog("allMusicsCheck")
+            logger.printLog("allMusicsCheck")
         }.value
         
         // 1️⃣ Fetch template info on main thread
@@ -575,7 +593,9 @@ extension MetalEngine {
         await Task {
             if timeLoopHandler == nil || animTimeLoopHandler == nil {
                 timeLoopHandler = TimeLoopHnadler(timeLengthDuration: TimeInterval(templateInfo.totalDuration), drawCallManager: drawCallManager)
+                timeLoopHandler?.setPackagelogger(logger: logger)
                 animTimeLoopHandler = AnimationTimeLoopHnadler(drawCallManager: drawCallManager!)
+                animTimeLoopHandler?.setPackageLogger(logger: logger)
                 sceneManager.setTimeLoopHandler(looper: timeLoopHandler!, animLooper: animTimeLoopHandler!)
             }
         }.value
@@ -583,6 +603,7 @@ extension MetalEngine {
         // 5️⃣ Prepare TemplateHandler in Background
         let templateHandler = await Task { () -> TemplateHandler in
             let handler = TemplateHandler()
+            handler.setPackageLogger(logger: logger, engineConfig: engineConfig)
             handler.childDict = await MainActor.run { databaseManager.childDict }
             await MainActor.run { databaseManager.cleanUp() }
            
@@ -615,7 +636,8 @@ extension MetalEngine {
                         let currentProgress = progressUnit
                         progressUnit = currentProgress + (CGFloat(progress) * ( loadThumbnails ? 0.45 : 0.9))
                     DispatchQueue.main.async {
-                        UIStateManager.shared.progress += (progress * ( loadThumbnails ? 0.45 : 1.0))
+//                        UIStateManager.shared.progress += (progress * ( loadThumbnails ? 0.45 : 1.0))
+                        self.engineConfig.progress += (progress * ( loadThumbnails ? 0.45 : 1.0))
                     }
                     
                 }
@@ -624,9 +646,9 @@ extension MetalEngine {
                 if loaded {
                     
                     var canRenderWatermark : Bool = false
-                    canRenderWatermark = !(UIStateManager.shared.isPremium || templateInfo.isThisTemplateBought)
+                    canRenderWatermark = !(engineConfig.isPremium || templateInfo.isThisTemplateBought)
                     if shouldCheckTempalteWaterrmark {
-                        canRenderWatermark = !(UIStateManager.shared.isPremium || !templateInfo.showWatermark.toBool())
+                        canRenderWatermark = !(engineConfig.isPremium || !templateInfo.showWatermark.toBool())
                     }
                     sceneManager.canRenderWatermark(canRenderWatermark)
 
@@ -636,7 +658,8 @@ extension MetalEngine {
                     
                     if loadThumbnails  {
                         //                    if thumbManagar == nil {
-                        thumbManagar = ThumbManager(templateHandler: templateHandler)
+                        thumbManagar = ThumbManager(templateHandler: templateHandler, resourceProvider: resourceProvider, logger: logger)
+                        thumbManagar?.sceneConfig = sceneConfig
                         //                    }
                         
                         thumbManagar?.sceneProgress = { [weak self]  progress in
@@ -645,7 +668,8 @@ extension MetalEngine {
                             progressUnit = currentProgress + (CGFloat(progress) * ( 0.45))
 
                             DispatchQueue.main.async {
-                                UIStateManager.shared.progress += (progress * 0.45)
+//                                UIStateManager.shared.progress += (progress * 0.45)
+                                self.engineConfig.progress += (progress * 0.45)
                             }
                         }
                         await thumbManagar?.updateThumbnail(id: 0)
@@ -661,8 +685,8 @@ extension MetalEngine {
                 guard let self = self else { return }
                 
                 fetchStatus = .Success
-                UIStateManager.shared.progress = 0
-
+//                UIStateManager.shared.progress = 0
+                engineConfig.progress = 0
             }
             return
         }
@@ -684,11 +708,12 @@ extension MetalEngine {
     }
     func prepareScene2(templateID: Int, refSize: CGSize , loadThumbnails:Bool ) async -> Bool {
         await MainActor.run {
-            UIStateManager.shared.progress = 0.0
+//            UIStateManager.shared.progress = 0.0
+            engineConfig.progress = 0.0
         }
         await Task {
         let allFontsChecked =  await checkAndDownloadFontsForTemplateId(templateId: templateID)
-        printLog("allFontsCheck")
+            logger.printLog("allFontsCheck")
         }.value
         
         // 1️⃣ Fetch template info on main thread
@@ -702,7 +727,8 @@ extension MetalEngine {
         }
         
         await MainActor.run {
-            UIStateManager.shared.progress = 0.1
+//            UIStateManager.shared.progress = 0.1
+            engineConfig.progress = 0.1
         }
         // 2️⃣ Load Canvas on Main Thread
         await MainActor.run {
@@ -718,7 +744,9 @@ extension MetalEngine {
         await Task {
             if timeLoopHandler == nil || animTimeLoopHandler == nil {
                 timeLoopHandler = TimeLoopHnadler(timeLengthDuration: TimeInterval(templateInfo.totalDuration), drawCallManager: drawCallManager)
+                timeLoopHandler?.setPackagelogger(logger: logger)
                 animTimeLoopHandler = AnimationTimeLoopHnadler(drawCallManager: drawCallManager!)
+                animTimeLoopHandler?.setPackageLogger(logger: logger)
                 sceneManager.setTimeLoopHandler(looper: timeLoopHandler!, animLooper: animTimeLoopHandler!)
             }
         }.value
@@ -726,6 +754,7 @@ extension MetalEngine {
         // 5️⃣ Prepare TemplateHandler in Background
         let templateHandler = await Task { () -> TemplateHandler in
             let handler = TemplateHandler()
+            handler.setPackageLogger(logger: logger, engineConfig: engineConfig)
             handler.childDict = await MainActor.run { databaseManager.childDict }
             await MainActor.run { databaseManager.cleanUp() }
            
@@ -741,7 +770,7 @@ extension MetalEngine {
         await MainActor.run {
             
             self.audioPlayer?.setTemplateHandler(templateHandler: templateHandler)
-            if templateHandler.currentTemplateInfo?.isPremium == 1 && !UIStateManager.shared.isPremium && templateHandler.currentTemplateInfo?.category != "DRAFT"{
+            if templateHandler.currentTemplateInfo?.isPremium == 1 && !engineConfig.isPremium && templateHandler.currentTemplateInfo?.category != "DRAFT"{
                 editorUIState = .Personalised
             }
             else{
@@ -755,7 +784,8 @@ extension MetalEngine {
             let didSucceed = await Task {
                 sceneManager.sceneProgress = { progress in
                     DispatchQueue.main.async {
-                        UIStateManager.shared.progress += (progress * ( loadThumbnails ? 0.45 : 0.9))
+//                        UIStateManager.shared.progress += (progress * ( loadThumbnails ? 0.45 : 0.9))
+                        self.engineConfig.progress += (progress * ( loadThumbnails ? 0.45 : 0.9))
                     }
                 }
                 
@@ -763,19 +793,21 @@ extension MetalEngine {
                 
                 let loaded = await sceneManager.prepareSceneGraph(templateInfo: templateInfo)
                 if loaded {
-                    sceneManager.canRenderWatermark(!(UIStateManager.shared.isPremium || templateInfo.isThisTemplateBought))
+                    sceneManager.canRenderWatermark(!(engineConfig.isPremium || templateInfo.isThisTemplateBought))
 
                     observeCurrentActions()
                     observePlayerControls()
                     
                     if loadThumbnails  {
                         //                    if thumbManagar == nil {
-                        thumbManagar = ThumbManager(templateHandler: templateHandler)
+                        thumbManagar = ThumbManager(templateHandler: templateHandler, resourceProvider: resourceProvider, logger: logger)
+                        thumbManagar?.sceneConfig = sceneConfig
                         //                    }
                         
                         thumbManagar?.sceneProgress = { progress in
                             DispatchQueue.main.async {
-                                UIStateManager.shared.progress += (progress * 0.45)
+//                                UIStateManager.shared.progress += (progress * 0.45)
+                                self.engineConfig.progress += (progress * 0.45)
                             }
                         }
                         await thumbManagar?.updateThumbnail(id: 0)
@@ -819,7 +851,7 @@ extension MetalEngine {
                 allResults.append(result)
             }
         }
-        printLog("All Fonts Satisfied")
+        logger.printLog("All Fonts Satisfied")
         return fontsForTemplateList.count == allResults.count
     }
     
@@ -849,13 +881,13 @@ extension MetalEngine {
                 allResults.append(result)
             }
         }
-        printLog("All Fonts Satisfied")
+        logger.printLog("All Fonts Satisfied")
         return allResults.first ?? true
     }
     
     func downloadFontFromServer2(font: String) async -> Bool {
         do{
-            let filePath = try await NetworkManager.shared.downloadFontFromServer(fontName: font)
+            let filePath = try await engineConfig.downloadFontFromServer(fontName: font)
             print("font downloaded from server path: \(filePath)")
             return true
         }catch{
@@ -866,7 +898,7 @@ extension MetalEngine {
     
     func downloadMusicFromServer2(musicPath: String) async -> Bool {
         do{
-            let filePath = try await NetworkManager.shared.downloadMusicFromServer(musicPath: musicPath)
+            let filePath = try await engineConfig.downloadMusicFromServer(musicPath: musicPath)
             print("music downloaded from server path: \(filePath)")
             return true
         }catch{

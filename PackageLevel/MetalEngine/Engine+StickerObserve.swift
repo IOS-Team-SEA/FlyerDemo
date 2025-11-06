@@ -58,17 +58,4 @@ extension MetalEngine {
             
         }
     }
-    
-//    func observeCurrentModel(){
-//        if let cModel = currentModel as? StickerInfo{
-//            cModel.$modelOpacity.dropFirst().sink {[unowned self] newValue in
-//                print("metal engine continuous opacity: \(newValue)")
-//            }.store(in: &modelPropertiesCancellables)
-//            
-////            cModel.$cropRect.dropFirst().sink { newValue in
-////                print("Metal Engine crop rect: \(newValue)")
-////            }.store(in: &cancellables)
-//        }
-//        
-//    }
 }

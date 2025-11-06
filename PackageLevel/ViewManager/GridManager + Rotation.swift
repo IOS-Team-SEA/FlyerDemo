@@ -112,7 +112,7 @@ extension GridManager{
     func drawRotatedDottedLine(context : CGContext){
         
         guard let currentModel = templateHandler.currentModel else {
-            printLog("Nil Current Model")
+//            printLog("Nil Current Model")
             return
         }
         
@@ -120,7 +120,7 @@ extension GridManager{
         
      
         
-       printLog("NewRoPoint",rotatedOrigin)
+//       printLog("NewRoPoint",rotatedOrigin)
         
         let  dashes: [ CGFloat ] = [ 0.0, 2.0 , 4.0 ,6.0 ]
 

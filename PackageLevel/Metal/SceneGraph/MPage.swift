@@ -15,10 +15,5 @@ class MPage:MParent {
         super.init(model: pageInfo)
         switchTo(type: .SceneRender)
     }
-    
-//    override func setmOpacity(opacity: Float) {
-////        mOpacity = 1.0
-////        self.opacity = Double(1.0)
-//        backgroundChild?.setmOpacity(opacity: opacity)
-//    }
+
 }

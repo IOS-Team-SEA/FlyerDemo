@@ -169,7 +169,7 @@ class StickerInfo:BaseModel ,StickerModelProtocol,ImageProtocol{
     @Published var changeOrReplaceImage:ReplaceModel?
     
     
-    func getCropperImage() -> UIImage{
+    func getCropperImage(engineConfig: EngineConfiguration) -> UIImage{
         
         if changeOrReplaceImage?.imageModel.sourceType == .BUNDLE{
             if let localPath = changeOrReplaceImage?.imageModel.localPath{
@@ -198,9 +198,9 @@ class StickerInfo:BaseModel ,StickerModelProtocol,ImageProtocol{
             if let localPath = changeOrReplaceImage?.imageModel.localPath{
                 let imageName = localPath.components(separatedBy: "/").last!
                 do{
-                    if let pngData = AppFileManager.shared.assets?.readDataFromFile(fileName: imageName){
+                    if let pngData = engineConfig.readDataFromFileFromAssets(fileName: imageName){
                         return UIImage(data: pngData) ?? UIImage(systemName: "xmark.octagon")!
-                    }else if let pngDataLocal = AppFileManager.shared.localAssets?.readDataFromFile(fileName: imageName){
+                    }else if let pngDataLocal = engineConfig.readDataFromFileLocalAssets(fileName: imageName){
                         return UIImage(data: pngDataLocal) ?? UIImage(systemName: "xmark.octagon")!
                     }
                     
@@ -214,9 +214,9 @@ class StickerInfo:BaseModel ,StickerModelProtocol,ImageProtocol{
             }else{
                 let imageName = localPath.components(separatedBy: "/").last!
                 do{
-                    if let pngData = AppFileManager.shared.assets?.readDataFromFile(fileName: imageName+".png"){
+                    if let pngData = engineConfig.readDataFromFileFromAssets(fileName: imageName+".png"){
                         return UIImage(data: pngData) ?? UIImage(systemName: "xmark.octagon")!
-                    }else if let pngDataLocal = AppFileManager.shared.assets?.readDataFromFile(fileName: imageName+".png"){
+                    }else if let pngDataLocal = engineConfig.readDataFromFileLocalAssets(fileName: imageName+".png"){
                         return UIImage(data: pngDataLocal) ?? UIImage(systemName: "xmark.octagon")!
                     }
                     
@@ -234,7 +234,7 @@ class StickerInfo:BaseModel ,StickerModelProtocol,ImageProtocol{
             if let localPath = changeOrReplaceImage?.imageModel.serverPath{
                 let imageName = localPath.components(separatedBy: "/").last!
                 do{
-                    if let savedImage = try ImageDownloadManager.loadImageFromDocumentsDirectory(filename: imageName, directory: AppFileManager.shared.assets!) {
+                    if let savedImage = try engineConfig.loadImageFromDocumentsDirectory(filename: imageName, directory: engineConfig.getAssetsPath()!) {
                         return savedImage
                     }
                     
@@ -242,10 +242,10 @@ class StickerInfo:BaseModel ,StickerModelProtocol,ImageProtocol{
                         Task{
                             do{
                                 
-                                let serverImage = try await NetworkManager.shared.fetchImage(imageURL: localPath)
+                                let serverImage = try await engineConfig.fetchImage(imageURL: localPath)
                                 
                                 if let imageData = serverImage?.pngData() {
-                                    try ImageDownloadManager.saveImageToDocumentsDirectory(imageData: imageData, filename: imageName, directory: AppFileManager.shared.assets!)
+                                    try engineConfig.saveImageToDocumentsDirectory(imageData: imageData, filename: imageName, directory: engineConfig.getAssetsPath()!)
                                 }
                                 return serverImage
                             }
@@ -262,7 +262,7 @@ class StickerInfo:BaseModel ,StickerModelProtocol,ImageProtocol{
             }else{
                 let imageName = serverPath.components(separatedBy: "/").last!
                 do{
-                    if let savedImage = try ImageDownloadManager.loadImageFromDocumentsDirectory(filename: imageName, directory: AppFileManager.shared.assets!) {
+                    if let savedImage = try engineConfig.loadImageFromDocumentsDirectory(filename: imageName, directory: engineConfig.getAssetsPath()!) {
                         return savedImage
                     }
                     
@@ -270,10 +270,10 @@ class StickerInfo:BaseModel ,StickerModelProtocol,ImageProtocol{
                         Task{
                             do{
                                 
-                                let serverImage = try await NetworkManager.shared.fetchImage(imageURL: serverPath)
+                                let serverImage = try await engineConfig.fetchImage(imageURL: serverPath)
                                 
                                 if let imageData = serverImage?.pngData() {
-                                    try ImageDownloadManager.saveImageToDocumentsDirectory(imageData: imageData, filename: imageName, directory: AppFileManager.shared.assets!)
+                                    try engineConfig.saveImageToDocumentsDirectory(imageData: imageData, filename: imageName, directory: engineConfig.getAssetsPath()!)
                                 }
                                 return serverImage
                             }

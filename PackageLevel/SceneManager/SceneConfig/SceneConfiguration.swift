@@ -10,5 +10,5 @@ import UIKit
 
 public protocol SceneConfiguration {
     var accentColor: UIColor { get }
-    var contentScaleFactor: CGFloat { get }
+    var contentScaleFactor: CGFloat { get set }
 }

@@ -187,30 +187,31 @@ class ParentModel : BaseModel {
           }
       }
     //method to change level of every child
-    func increaseChildLevel(newLevel: Int) {
+    func increaseChildLevel(newLevel: Int, logger: PackageLogger?) {
         if self.isParent{
             guard let parentableChilds = children.map({$0 as? ParentModel}) as? [ParentModel] else {
-                printLog("Parentable childs nil \(#function)")
+                logger?.printLog("Parentable childs nil \(#function)")
                 return }
-            parentableChilds.forEach { $0.increaseChildLevel(newLevel: newLevel + 1) }
+            parentableChilds.forEach { $0.increaseChildLevel(newLevel: newLevel + 1, logger: logger) }
         }
     }
     
-    func decreaseChildLevel(newLevel: Int) {
+    func decreaseChildLevel(newLevel: Int, logger: PackageLogger?) {
             
         if self.isParent{
             guard let parentableChilds = children.map({$0 as? ParentModel}) as? [ParentModel] else {
-                printLog("Parentable childs nil \(#function)")
+                logger?.printLog("Parentable childs nil \(#function)")
                 return }
 
-            parentableChilds.forEach { $0.decreaseChildLevel(newLevel: newLevel - 1) }
+            parentableChilds.forEach { $0.decreaseChildLevel(newLevel: newLevel - 1, logger: logger) }
         }
     }
     
    
     
 }
-public class ParentInfo:ParentModel{
+
+class ParentInfo:ParentModel{
 //    var templateID: Int = -1
 
     // Text

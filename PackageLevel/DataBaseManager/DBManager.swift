@@ -353,7 +353,7 @@ extension DBManager {
         }
         
         // Create the full destination path
-        let fullDestPath = destPath.appendingPathComponent("DESIGN_DB.db")
+        let fullDestPath = destPath.appendingPathComponent(DBManager.shared.logger?.getDBName() ?? "DESIGN_DB.db")
         
         // Check if the database already exists
         if FileManager.default.fileExists(atPath: fullDestPath.path) {

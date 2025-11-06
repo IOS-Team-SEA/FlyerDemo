@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Foundation
 
 class MetalThread {
     private var queue: DispatchQueue

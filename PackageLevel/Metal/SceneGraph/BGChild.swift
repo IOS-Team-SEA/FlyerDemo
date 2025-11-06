@@ -14,11 +14,5 @@ class BGChild:TexturableChild{
       
         super.init(model: model)
     }
-  
-//    override func setmOpacity(opacity: Float) {
-//        mOpacity = 1.0
-//        self.opacity = Double(1.0)
-//    }
-    
     
 }

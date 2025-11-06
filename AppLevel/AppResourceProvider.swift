@@ -47,8 +47,39 @@ import UIKit
 //viewManager.addControlBar(EditControlBar())
 //viewManager.setMuteControl(MuteControl())
 
-//DBManager.shared.setDBLogger(logger: AppDBLogger)
+//DBManager.shared.setDBLogger(logger: AppDBLogger, engineConfig: )
 
+//final class AppDependencyResolver: DependencyResolverProtocol {
+//
+//    private var container: [String: Any] = [:]
+//
+//    init() {
+//        // Register your app-level dependencies
+//        register(PipelineLibrary(), for: PipelineLibrary.self)
+//    }
+//
+//    func register<T>(_ instance: T, for type: T.Type) {
+//        let key = String(describing: type)
+//        container[key] = instance
+//    }
+//
+//    func resolve<T>(_ type: T.Type) -> T? {
+//        let key = String(describing: type)
+//        return container[key] as? T
+//    }
+//
+//    func resolve<T, Arg>(_ type: T.Type, argument: Arg) -> T? {
+//        // optionally handle argument-based resolution
+//        return resolve(type)
+//    }
+//
+//    func resolve<T>(id: String, type: T.Type, argument: Any?) -> T? {
+//        return container[id] as? T
+//    }
+//    
+//    
+//    
+//}
 
 /*
  
@@ -58,5 +89,8 @@ import UIKit
  ViewsProvider
  ViewManagerConfiguration
  DBLogger
+ EngineConfiguration
+ LayersConfiguration
+ 
  
  */

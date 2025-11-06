@@ -50,6 +50,8 @@ class TimeLoopHnadler : DrawCallListener , TimeLooperListener ,PlayerControlsRea
     var playerControlsCancellables: Set<AnyCancellable> = []
     weak var drawCallManager : DrawCallManager?
     
+    var logger: PackageLogger?
+    
     @Published private(set) var currentTime: Float = 0
     
     @Published  var renderState : SceneRenderingState = .Prepared
@@ -64,7 +66,7 @@ class TimeLoopHnadler : DrawCallListener , TimeLooperListener ,PlayerControlsRea
     
     
     deinit {
-        printLog("de-init \(ID) TimeLoop.deinit")
+        logger?.printLog("de-init \(ID) TimeLoop.deinit")
     }
   
     
@@ -95,10 +97,15 @@ class TimeLoopHnadler : DrawCallListener , TimeLooperListener ,PlayerControlsRea
         
        
     }
+    
+    func setPackagelogger(logger: PackageLogger){
+        self.logger = logger
+    }
+    
     func observePlayerControls() {
         
         playerControlsCancellables.removeAll()
-        logVerbose("TimeLoopHandler + PlayerControls listeners ON \(playerControlsCancellables.count)")
+        logger?.logVerbose("TimeLoopHandler + PlayerControls listeners ON \(playerControlsCancellables.count)")
 
         self.$renderState.sink { [weak self] state in
             guard let self = self else { return }
@@ -159,7 +166,7 @@ class TimeLoopHnadler : DrawCallListener , TimeLooperListener ,PlayerControlsRea
           manageControlsInternally()
            
            currentTime += Float(1.0/Double(MetalDefaults.PreferredFrameRate))
-           printLog("CurrentTime:",currentTime)
+           logger?.printLog("CurrentTime: \(currentTime)")
            lastCurrentTime = Double(currentTime)
          
      }
@@ -205,12 +212,12 @@ class AnimationTimeLoopHnadler : DrawCallListener   {
     
     
     var ID: Int = 1
-    
+    var logger: PackageLogger?
     
     
     
     deinit {
-        printLog("\(ID) TimeLoop.deinit")
+        logger?.printLog("\(ID) TimeLoop.deinit")
     }
  
     private(set) var timeLengthDuration: TimeInterval  = 0
@@ -256,7 +263,9 @@ class AnimationTimeLoopHnadler : DrawCallListener   {
     }
     
     
-    
+    func setPackageLogger(logger: PackageLogger){
+        self.logger = logger
+    }
     
    
        private func updateTimer(){
@@ -266,7 +275,7 @@ class AnimationTimeLoopHnadler : DrawCallListener   {
           manageControlsInternally()
            
            currentAnimTime += Float(1.0/Double(MetalDefaults.PreferredFrameRate))
-           printLog("currentAnimTime:",currentAnimTime)
+           logger?.printLog("currentAnimTime: \(currentAnimTime)")
 
          
      }

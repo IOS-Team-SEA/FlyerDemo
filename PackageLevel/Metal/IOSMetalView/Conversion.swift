@@ -9,7 +9,7 @@ import Foundation
 import simd
 import Metal
 import MetalKit
-
+import UIKit
 
 class Conversion{
     
@@ -24,6 +24,8 @@ class Conversion{
         return mappedValue
     }
     
+    static var logger: PackageLogger?
+    
     
     //    func getDBValueForX(x:Double)->CGFloat{
     //        return  mapValue(x, fromRange: 0...1, toRange: -1...1)
@@ -33,6 +35,10 @@ class Conversion{
     //        return  mapValue(y, fromRange: 0...1, toRange: -1...1)
     //    }
     //
+    
+    static func setPackageLogger(logger: PackageLogger){
+        self.logger = logger
+    }
     
     static func setPositionForMetal(centerX:Float , centerY : Float) -> SIMD3<Float> {
         let x = mapValue((centerX), fromRange: 0...1, toRange: -1...1)
@@ -85,7 +91,7 @@ class Conversion{
 //            let cg = image.cgImage!
             texture = try textureManager.textureN(from: image,flip: flip)
         }catch let error as NSError{
-            printLog(error)
+            logger?.printLog("\(error)")
         }
         
       //  let img  = Conversion.textureToUIImage(texture!)
@@ -147,7 +153,7 @@ class Conversion{
            guard let cgImage = context?.makeImage() else {
                return nil
            }
-           printLog("MEMORY LEAK _ IF PRINTING IN CONTINUOUSLY OTHERWISE IGNORE ")
+        logger?.printLog("MEMORY LEAK _ IF PRINTING IN CONTINUOUSLY OTHERWISE IGNORE ")
            return UIImage(cgImage: cgImage)
         
         

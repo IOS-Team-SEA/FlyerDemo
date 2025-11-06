@@ -15,6 +15,12 @@ enum SOURCETYPE:String{
     
 }
 
+enum ImageCropperType: Int{
+    case custom = 0
+    case ratios = 1
+    case circle = 2
+}
+
 struct ReplaceModel :  Equatable{
     static func == (lhs: ReplaceModel, rhs: ReplaceModel) -> Bool {
         if lhs.modelID != rhs.modelID {
@@ -82,7 +88,7 @@ struct ImageModel: Equatable{
     var imageHeight : Double
     
     
-    func getImage() async->UIImage?{
+    func getImage(engineConfig: EngineConfiguration) async->UIImage?{
         if sourceType == .BUNDLE{
             let imageName = localPath.components(separatedBy: "/").last!
          
@@ -98,35 +104,31 @@ struct ImageModel: Equatable{
             
             let imageName = localPath.components(separatedBy: "/").last!
             do{
-                if let pngData = AppFileManager.shared.assets?.readDataFromFile(fileName: imageName){
+                if let pngData = engineConfig.readDataFromFileFromAssets(fileName: imageName){
                     return UIImage(data: pngData)
-                }else if let pngDataLocal = AppFileManager.shared.localAssets?.readDataFromFile(fileName: imageName){
+                }else if let pngDataLocal = engineConfig.readDataFromFileLocalAssets(fileName: imageName){
                     return UIImage(data: pngDataLocal)
                 }
-                
-//                if let savedImage = try ImageDownloadManager.loadImageFromDocumentsDirectory(filename: "Assets/"+imageName+".png") {
-//                    return savedImage
-//                }
             }catch{
-                    print("Error loading image from documents directory")
-                    return nil
-                }
+                print("Error loading image from documents directory")
+                return nil
+            }
             
       
         }else{
             let imageName = serverPath.components(separatedBy: "Assets/").last!
             do{
-                if let savedImage = try ImageDownloadManager.loadImageFromDocumentsDirectory(filename: imageName, directory: AppFileManager.shared.assets!) {
+                if let savedImage = try engineConfig.loadImageFromDocumentsDirectory(filename: imageName, directory: engineConfig.getAssetsPath()!) {
                 return savedImage
             }
             
             else {
                 do{
                   
-                    if let serverImage = try await NetworkManager.shared.fetchImage(imageURL: imageName){
+                    if let serverImage = try await engineConfig.fetchImage(imageURL: imageName){
                         let resizedImage = resizeImage(image: serverImage, targetSize: CGSize(width: 3000, height: 3000))
                         if let imageData = serverImage.pngData() {
-                            try ImageDownloadManager.saveImageToDocumentsDirectory(imageData: imageData, filename: imageName, directory: AppFileManager.shared.assets!)
+                            try engineConfig.saveImageToDocumentsDirectory(imageData: imageData, filename: imageName, directory: engineConfig.getAssetsPath()!)
                         }
                         return resizedImage
                     }
@@ -170,8 +172,4 @@ struct ImageModel: Equatable{
         
         return newImage
     }
-    
-//    func getDBImageModel()->DBImageModel{
-//        return DBImageModel(imageID: -1,imageType: imageType.rawValue,serverPath: serverPath,localPath: localPath,cropX: cropRect.minX,cropY: <#T##Double#>)
-//    }
 }

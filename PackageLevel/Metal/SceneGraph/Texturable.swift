@@ -555,7 +555,7 @@ class TexturableChild : MChild,Texturable,Computable,Maskable{
             if let texture = finaltexture {
                 parentEncoder.bind(texture: finaltexture)
             } else {
-                logError("Texture Not Found")
+                logger?.logError("Texture Not Found")
             }
          //  let image = Conversion.textureToUIImage(finaltexture)
          //   let img = Conversion.textureToUIImage(sourceTexture)

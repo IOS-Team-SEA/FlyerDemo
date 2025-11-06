@@ -9,7 +9,16 @@ import Foundation
 import UIKit
 import Combine
 
+enum ShadowType{
+    case direction
+    case opacity
+    case color
+}
 
+enum BGPanelType{
+    case color
+    case opacity
+}
 
 struct TextModelChanged{
     var oldText : String
@@ -259,10 +268,10 @@ class TextInfo:BaseModel,TextModelProtocol{
     
 
 
-    func setTextModel(textModel: DBTextModel) {
+    func setTextModel(textModel: DBTextModel, engineConfig: EngineConfiguration?) {
            textId = textModel.textId
            text = textModel.text
-        textFont = UIFont(name: getRealFont(nameOfFont: textModel.textFont) , size: fontSize) ?? .systemFont(ofSize: 14)
+        textFont = UIFont(name: FontDM.getRealFont(nameOfFont: textModel.textFont, engineConfig: engineConfig) , size: fontSize) ?? .systemFont(ofSize: 14)
         textColor =  textModel.textColor.convertIOSColorStringToUIColor()
         textGravity = HTextGravity(rawValue:  textModel.textGravity) ?? .Center
         lineSpacing = (textModel.lineSpacing).toFloat()
@@ -432,21 +441,21 @@ func createTransparentImage(size: CGSize, scale: CGFloat = UIScreen.main.scale) 
 
 extension TextInfo {
     /// Neeshu Use this method
-    func createImage(thumbUpdate : Bool = false , keepSameFont:Bool = false , text:String,properties:TextProperties,refSize:CGSize,maxWidth: CGFloat,maxHeight:CGFloat, contentScaleFactor : CGFloat) -> UIImage?{
+    func createImage(thumbUpdate : Bool = false , keepSameFont:Bool = false , text:String,properties:TextProperties,refSize:CGSize,maxWidth: CGFloat,maxHeight:CGFloat, contentScaleFactor : CGFloat, logger: PackageLogger?) -> UIImage?{
         if refSize.width == 0.0 || refSize.height == 0.0 {
-            logError("Text RefSize Zero \(text) , returning Empty Image")
+            logger?.logError("Text RefSize Zero \(text) , returning Empty Image")
             return createTransparentImage(size: CGSize(width: 10 , height: 10))
         }
         
         if text.isEmpty {
-            logError("Text Is Empty , Returning Empty Image")
+            logger?.logError("Text Is Empty , Returning Empty Image")
             return  createTransparentImage(size: CGSize(width: 10 , height: 10))
         }
         
         let newScaledWidth = refSize.width * contentScaleFactor
         let newScaledHeight = refSize.height * contentScaleFactor
         let scaledRefSize = CGSize(width: newScaledWidth, height: newScaledHeight)
-       let values =  drawTextAsImage(keepFontSizeFix: keepSameFont, text: text, boundingBox: CGRect(origin: .zero, size: scaledRefSize), textProperties: properties)
+       let values =  drawTextAsImage(keepFontSizeFix: keepSameFont, text: text, boundingBox: CGRect(origin: .zero, size: scaledRefSize), textProperties: properties, logger: logger)
         let image = values!.0!
         if !thumbUpdate{
             fontSize = values!.1

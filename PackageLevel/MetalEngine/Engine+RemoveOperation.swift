@@ -53,11 +53,11 @@ extension MetalEngine {
                 //                }
                 
             }else{
-                printLog("page in not found")
+                logger.printLog("page in not found")
             }
             
         }else{
-            printLog("parent is not found so that ungroup not perform")
+            logger.printLog("parent is not found so that ungroup not perform")
         }
     }
 }

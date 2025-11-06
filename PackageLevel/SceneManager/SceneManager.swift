@@ -687,7 +687,7 @@ class ThumbManager : SceneComposable {
         
          let properties = text.textProperty
         
-        let textImage = text.createImage(thumbUpdate : true,text: text.text, properties: properties, refSize: text.baseFrame.size , maxWidth: text.baseFrame.size.width, maxHeight: .infinity, contentScaleFactor: 1)
+        let textImage = text.createImage(thumbUpdate : true,text: text.text, properties: properties, refSize: text.baseFrame.size , maxWidth: text.baseFrame.size.width, maxHeight: .infinity, contentScaleFactor: 1, logger: logger)
         if mText.canRender {
             let textTexture = Conversion.loadTexture(image: textImage!, flip: false )!
             

@@ -29,14 +29,20 @@ protocol AnimationRepositoryStorable {
 class DataSourceRepository : AnimationRepositoryStorable {
     
     static var shared : DataSourceRepository = DataSourceRepository()
+    
+    var logger: PackageLogger?
+    
     deinit {
-        printLog("Neeshu deinited")
+        logger?.printLog("Neeshu deinited")
     }
     
     init() {
         
     }
     
+    func setPackageLogger(logger: PackageLogger){
+        self.logger = logger
+    }
     
     func cleanUp() {
         AnimationCategories = nil
@@ -150,9 +156,17 @@ class TemplateHandler  : TemplateHandlerProtocol,DictCacheProtocol, ObservableOb
     
    
     
+    var logger: PackageLogger?
+    var engineConfig: EngineConfiguration?
     
     deinit {
-        printLog("de-init \(self)")
+        logger?.printLog("de-init \(self)")
+    }
+    
+    func setPackageLogger(logger: PackageLogger, engineConfig: EngineConfiguration){
+        self.logger = logger
+        self.engineConfig = engineConfig
+        currentActionState.setPackageLogger(logger: logger, actionStateConfig: engineConfig)
     }
     
     var deepSelectionInProgress :  Bool = false
@@ -526,152 +540,11 @@ class TemplateHandler  : TemplateHandlerProtocol,DictCacheProtocol, ObservableOb
         // You might also need to update other data structures or perform additional logic based on your data model.
     }
     
-    
-//    func getChildrenMultiselectObjectForParent(modelID : Int) -> [MultiSelectedArrayObject]{
-//        
-//        // Filter children in parent model
-////        var children = childDict.values.filter { $0.parentId == parentID && $0.softDelete == false }
-//        var result = [MultiSelectedArrayObject]()
-//        
-//        let children = childDict.values.filter { child in
-//            // Ensure `softDelete` is false
-//            guard !child.softDelete else { return false }
-//            
-//            guard child.modelType != .Page else { return false }
-//            
-//            // Check if the child is a ParentModel with non-empty children, or just include the child if it's not a ParentModel
-//            if let parentModel = child as? ParentModel {
-//                return !parentModel.children.isEmpty
-//            } else {
-//                return true
-//            }
-//        }
-//        
-//        let sortedChildren = children.sorted {
-//            if $0.parentId == $1.parentId {
-//                return $0.orderInParent < $1.orderInParent
-//            }
-//            return $0.parentId < $1.parentId
-//        }
-//        
-//        for child in sortedChildren{
-//            let isParentEditState = (child as? ParentModel)?.editState ?? false
-//            let multiSelectObject = MultiSelectedArrayObject(
-//                id: child.modelId,
-//                thumbImage: child.thumbImage ?? UIImage(named: "b0")!,
-//                orderID: child.orderInParent,
-//                parentEditState: isParentEditState
-//            )
-//            
-//            result.append(multiSelectObject)
-//            
-//            
-//        }
-//        
-//        for child in children{
-//            if !result.contains(where: { $0.id == child.modelId }) {
-//                let model = getModel(modelId: child.parentId)
-//                
-//                let isParentEditState = (child as? ParentModel)?.editState ?? false
-//                if let parentModel = model as? ParentModel, parentModel.editState{
-//                    let multiSelectObject = MultiSelectedArrayObject(
-//                        id: child.modelId,
-//                        thumbImage: child.thumbImage ?? UIImage(named: "b0")!,
-//                        orderID: child.orderInParent,
-//                        parentEditState: isParentEditState,
-//                        parentID: child.parentId
-//                    )
-//                    let index = (model?.orderInParent ?? 0) + child.orderInParent + 1
-//                    result.insert(multiSelectObject, at: index)
-//                }
-//            }
-//        }
-//        
-//        
-//        return result
-//        
-//
-////        // creating array and map children with id and thumbImage
-//////        return Array(children).map({return MultiSelectedArrayObject(id: $0.modelId, thumbImage: ($0.thumbImage ?? UIImage(named: "b0"))!)})
-////        return children
-////            .sorted(by: { $0.orderInParent < $1.orderInParent }) // Sort by `orderID`
-////            .map { child in
-////                let isParentEditState = (child as? ParentModel)?.editState ?? false
-////                //                    MultiSelectedArrayObject(id: child.modelId, thumbImage: child.thumbImage ?? UIImage(named: "b0")!, orderID: child.orderInParent, isParentsChild: child.parentId == modelID ? true : false)
-////                return MultiSelectedArrayObject(
-////                    id: child.modelId,
-////                    thumbImage: child.thumbImage ?? UIImage(named: "b0")!,
-////                    orderID: child.orderInParent,
-////                    isParentsChild: child.parentId == modelID,
-////                    parentEditState: isParentEditState,
-////                    parentID: child.parentId
-////                )
-////            }
-//        
-//       
-//    }
     /// always ensures right parent is selected
     var currentSuperModel : ParentModel?
     
     /// dont use this variable
     var currentEditedParentModel : ParentModel? //
-    
-//    func setCurrentModelAsPage(id: Int){
-//        currentModel?.isActive = false
-//        
-//        if let model = getModel(modelId: id){
-//            currentModel = model as BaseModel
-//            
-//            if model.modelType == .Sticker{
-//                selectedComponenet = .sticker
-////                    lastSelectedId = model.modelId
-//                currentStickerModel = model as? StickerInfo
-////                    currentActionState.parentEditState = false
-//                currentSuperModel = getModel(modelId: model.parentId) as? ParentModel
-//            }
-//            else if model.modelType == .Text{
-//                selectedComponenet = .text
-////                    lastSelectedId = model.modelId
-//                currentTextModel = model as? TextInfo
-//                currentSuperModel = getModel(modelId: model.parentId) as? ParentModel
-////                    currentActionState.parentEditState = false
-//                
-//            }
-//            else if model.modelType == .Parent{
-//                selectedComponenet = .parent
-////                    lastSelectedId = model.modelId
-//                currentParentModel = model as? ParentInfo
-//                currentSuperModel = getModel(modelId: model.parentId) as? ParentModel
-//                
-//                if currentParentModel.editState {
-//                    currentSuperModel = model as? ParentInfo
-//                    currentEditedParentModel = model as? ParentInfo
-//                }else{
-//                    currentEditedParentModel = nil
-//                }
-//                
-////                if let currentParentModel = currentParentModel{
-////                    currentActionState.parentEditState = (currentParentModel.editState)
-////                }
-//            }
-//            else if model.modelType == .Page{
-//                pageModelID = model.modelId
-////                    lastSelectedId = model.modelId
-//               // currentParentModel = model as? ParentModel
-//                currentPageModel = model as? PageInfo
-//                currentSuperModel = model as? ParentModel
-//               // currentActionState.selectedPageID = model.modelId
-//                currentActionState.lastSelectedTextTab = ""
-////                    currentActionState.parentEditState = false
-//                selectedComponenet = .page
-////                    playerControls.currentTime = currentModel!.startTime + 0.2
-//            }
-//            
-//            setSelectedModelChanged =  model
-////                getEditOpenForChild(model: model)
-//            currentModel?.isActive = true
-//        }
-//    }
     
     func forceSelectCurrentPage() {
         
@@ -680,7 +553,7 @@ class TemplateHandler  : TemplateHandlerProtocol,DictCacheProtocol, ObservableOb
         if let id = currentPageModel?.modelId {
             deepSetCurrentModel(id: id)
         }else {
-            logError("No Current Page Model")
+            logger?.logError("No Current Page Model")
            //deepSetCurrentModel(id: currentTemplateInfo!.pageInfo.first!.modelId)
         }
     }
@@ -689,7 +562,7 @@ class TemplateHandler  : TemplateHandlerProtocol,DictCacheProtocol, ObservableOb
     
     func setCurrentModel(id : Int , deepSmartSelect:Bool = true ){
             
-        logInfo("set id: \(id)")
+        logger?.logInfo("set id: \(id)")
 
             if playerControls?.renderState == .Playing{
                 playerControls?.renderState = .Paused
@@ -698,7 +571,7 @@ class TemplateHandler  : TemplateHandlerProtocol,DictCacheProtocol, ObservableOb
 //            
 //            
         if let model = currentModel , model.modelId == id /*&& model.modelId != pageModelID*/ {
-            printLog("Same Item Selected Again")
+            logger?.printLog("Same Item Selected Again")
             setSmartCurrentTime(selectedModel: model)
             return
         }
@@ -1929,33 +1802,12 @@ class TemplateHandler  : TemplateHandlerProtocol,DictCacheProtocol, ObservableOb
 
 }
 
-//extension TemplateHandler{
-//    func getEditCloseForChild(model:BaseModel){
-//        if let parent = getModel(modelId: model.parentId) as? ParentModel{
-//            if parent.parentId != parent.templateID{
-//                parent.editState = false
-//                getEditCloseForChild(model: parent)
-//            }
-//        }
-//    }
-//    
-//    func getEditOpenForChild(model:BaseModel){
-//        if let parent = getModel(modelId: model.parentId) as? ParentModel{
-//            if parent.parentId != parent.templateID && !parent.editState {
-//                getEditOpenForChild(model: parent)
-//                setCurrentModel(id: parent.modelId)
-//            }
-//        }
-//    }
-//}
-
-
 extension TemplateHandler {
     func performGroupAction(moveModel:MoveModel) {
         
       
         deepSetCurrentModel(id: currentPageModel?.modelId ?? -1)
-        logInfo("Action:\(moveModel.type)")
+        logger?.logInfo("Action:\(moveModel.type)")
         currentActionState.moveModel = moveModel
         
         deepSetCurrentModel(id: moveModel.newLastSelected)
@@ -1977,7 +1829,7 @@ extension TemplateHandler {
         }
         
         if let model = currentModel , model.modelId == id {
-            printLog("Same Item Selected Again")
+            logger?.printLog("Same Item Selected Again")
             setSmartCurrentTime(selectedModel: model)
             return true
         }
@@ -2033,7 +1885,7 @@ extension TemplateHandler {
                 
                 
                 if parent.editState {
-                    logInfo("Turning off editState for Parent \(parent.modelId)")
+                    logger?.logInfo("Turning off editState for Parent \(parent.modelId)")
                     setCurrentModel(id: parent.modelId)
                     parent.editState = false
                 }
@@ -2047,7 +1899,7 @@ extension TemplateHandler {
                 }
                 
                 if !parent.editState {
-                    logInfo("Turning on editState for Parent \(parent.modelId)")
+                    logger?.logInfo("Turning on editState for Parent \(parent.modelId)")
                     setCurrentModel(id: parent.modelId)
                     parent.editState = true
                 }
@@ -2060,94 +1912,7 @@ extension TemplateHandler {
         return true
     }
     
-//    func deepSetCurrentModel(modelId:Int) -> Bool {
-//        deepSelectionInProgress = true
-//        // Step 1: Get the currently selected model (ChildD) and the new model (ChildE)
-//          guard let currentModel = currentModel else {
-//              logError("Current model not found.")
-//             
-//              return false
-//          }
-//
-//          guard let newModelToSelect = getModel(modelId: modelId) else {
-//              logError("New model to select not found.")
-//         
-//              return false
-//          }
-//        
-//        
-//        // check if currentSuperModel id and currentModel parent id is same then no worries
-//        // if currentSuperModel has currentModelID as Children
-//        // Select CurrentModel
-////        
-////        if let currentParentID = currentSuperModel?.modelId, currentParentID == newModelToSelect.parentId {
-////            // that means sibling is being asked to select
-////            // just notify to select current model
-////            logInfo("selecting sibling")
-////            setCurrentModel(id: modelId)
-////            return true
-////        }
-//        
-//        // Step 2: Get the parents for the current child (ChildD)
-//           var currentParents = requestParentModelsForCurrentChild(id: currentModel.modelId) as! [ParentModel]
-//           
-//           // Step 3: Get the parents for the new child (ChildE)
-//        var newParents = requestParentModelsForCurrentChild(id: newModelToSelect.modelId) as! [ParentModel]
-//
-//        
-//        
-//        // Step 4: Identify parents to be turned off and on based on the difference
-//        let parentsToTurnOff = currentParents.filter { parent in
-//            return !newParents.contains { newParent in newParent.modelId == parent.modelId }
-//        }
-//
-//        let parentsToTurnOn = newParents.filter { newParent in
-//            return !currentParents.contains { parent in parent.modelId == newParent.modelId }
-//        }
-//        
-//        // Step 5: Turn off the editState for the parents that are no longer relevant
-//           for parent in parentsToTurnOff {
-//               // Skip if parent is of type 'Page'
-//               if parent.modelType == .Page {
-//                   continue
-//               }
-//
-//               
-//               if parent.editState {
-//                   logInfo("Turning off editState for Parent \(parent.modelId)")
-//                   setCurrentModel(id: parent.modelId)
-//                   parent.editState = false
-//               }
-//           }
-//
-//           // Step 6: Turn on the editState for the parents that need to be edited
-//        for parent in parentsToTurnOn.reversed() {
-//               // Skip if parent is of type 'Page'
-//               if parent.modelType == .Page {
-//                   continue
-//               }
-//
-//               if !parent.editState {
-//                   logInfo("Turning on editState for Parent \(parent.modelId)")
-//                   setCurrentModel(id: parent.modelId)
-//                   parent.editState = true
-//               }
-//           }
-//        deepSelectionInProgress = false
-//
-//        // Step 7: Once the relevant parents' editState are toggled, select the new child model (ChildE)
-//          setCurrentModel(id: newModelToSelect.modelId)
-//        
-//      return true
-//        
-//       
-//        
-//        
-//    }
-    //        if let model = templateHandler.currentModel {
-    //            templateHandler.getEditOpenForChild(model: model)
-    //            templateHandler.setCurrentModel(id: model.modelId)
-    //        }
+
 }
 
 
@@ -2164,72 +1929,6 @@ struct ParentBFAndTime{
     var childs : [BaseFrameAndStartTime]
 }
 
-// app delegate off
-// app uninstall
-// app delegate db
-// 2 column update
-// create table tenplate //
-
-
-//ViewManager
-/*
- 
- moveModel{
- oldView = view.tag(oldModel.parentID)
- newView = view.tag(newModel.parentID)
- 
- // is child oldParent is editState true
- it means the view of model is draw on currentView
- 
- // remove Model view from current parent
- 
- // check if newparent is edit State true
-    // add newModel View in current Parent View
-     // change frame for current model View
-    // change startTime and duration
- // change current parent view frame
- // change Start time and duration for parent
- // check if nested child is draw then change frame for existed parent view
-    if draw change there frame and time
- 
- //
- 
- 
- */
-
-// Engine
-
-/*
-
- 
-  
-    else
- 
-       // remoev child from existing oldParent
- 
-       // change order of child
-       // change parentID of child
-       // change starTime and duration
-       // change Size center rotation
-       // change Flip V & H
-       // add child in NewParent at order
-           // change order of other child if effect
-       // for each Parent in arrayOFParent{
-           getModel for parentID
-           change base Frame and baseTime
-           for each child in Parent {
-              if childID == parent.child.modelID
-                change baseFrame and center
- 
- 
- 
-          
- 
-  
-           
-      
-   
- */
 func downsample(imageAt imageURL: String,
                 to pointSize: CGSize,
                 scale: CGFloat = UIScreen.main.scale) -> UIImage? {

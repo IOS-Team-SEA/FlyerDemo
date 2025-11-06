@@ -1236,3 +1236,315 @@ func selectionVibrate() {
  
    
 }
+
+extension UIColor {
+    
+    public var rgbValue: RGB? {
+        
+        guard let components = cgColor.components else {
+            return nil
+        }
+        
+        let numComponents = cgColor.numberOfComponents
+        
+        let r: CGFloat
+        let g: CGFloat
+        let b: CGFloat
+        
+        if numComponents < 3 {
+            r = components[0]
+            g = components[0]
+            b = components[0]
+        } else {
+            r = components[0]
+            g = components[1]
+            b = components[2]
+        }
+        
+        return RGB(r: r, g: g, b: b)
+    }
+    
+    public var hsvValue: HSV? {
+        
+        guard let rgb = rgbValue else {
+            return nil
+        }
+        
+        return rgb.toHSV(preserveHS: true)
+    }
+    
+    public func hsvValue(preservingHue hue: CGFloat, preservingSat sat: CGFloat) -> HSV? {
+
+        guard let rgb = rgbValue else {
+            return nil
+        }
+        
+        return rgb.toHSV(preserveHS: true, h: hue, s: sat)
+    }
+    
+}
+
+public struct RGB: Hashable {
+    /// In range 0...1
+    public var r: CGFloat
+    
+    /// In range 0...1
+    public var g: CGFloat
+    
+    /// In range 0...1
+    public var b: CGFloat
+}
+
+public extension RGB {
+    
+    func toHSV(preserveHS: Bool, h: CGFloat = 0, s: CGFloat = 0) -> HSV {
+        
+        var h = h
+        var s = s
+        var v: CGFloat = 0
+        
+        var max = r
+        
+        if max < g {
+            max = g
+        }
+        
+        if max < b {
+            max = b
+        }
+        
+        var min = r
+        
+        if min > g {
+            min = g
+        }
+        
+        if min > b {
+            min = b
+        }
+        
+        // Brightness (aka Value)
+        
+        v = max
+        
+        // Saturation
+        
+        var sat: CGFloat = 0.0
+        
+        if max != 0.0 {
+            
+            sat = (max - min) / max
+            s = sat
+            
+        } else {
+            
+            sat = 0.0
+            
+            // Black, so sat is undefined, use 0
+            if !preserveHS {
+                s = 0.0
+            }
+        }
+        
+        // Hue
+        
+        var delta: CGFloat = 0
+        
+        if sat == 0.0 {
+            
+            // No color, so hue is undefined, use 0
+            if !preserveHS {
+                h = 0.0
+            }
+            
+        } else {
+            
+            delta = max - min
+            
+            var hue: CGFloat = 0
+            
+            if r == max {
+                hue = (g - b) / delta
+            } else if g == max {
+                hue = 2 + (b - r) / delta
+            } else {
+                hue = 4 + (r - g) / delta
+            }
+            
+            hue /= 6.0
+            
+            if hue < 0.0 {
+                hue += 1.0
+            }
+            
+            // 0.0 and 1.0 hues are actually both the same (red)
+            if !preserveHS || abs(hue - h) != 1.0 {
+                h = hue
+            }
+        }
+        
+        return HSV(h: h, s: s, v: v)
+    }
+    
+}
+
+public struct HSV: Hashable {
+    /// In degrees (range 0...360)
+    public var h: CGFloat
+    
+    /// Percentage in range 0...1
+    public var s: CGFloat
+    
+    /// Percentage in range 0...1
+    /// Also known as "brightness" (B)
+    public var v: CGFloat
+}
+
+extension HSV {
+    
+    /// These functions convert between an RGB value with components in the
+    /// 0.0..1.0 range to HSV where Hue is 0 .. 360 and Saturation and
+    /// Value (aka Brightness) are percentages expressed as 0.0..1.0.
+    //
+    /// Note that HSB (B = Brightness) and HSV (V = Value) are interchangeable
+    /// names that mean the same thing. I use V here as it is unambiguous
+    /// relative to the B in RGB, which is Blue.
+    func toRGB() -> RGB {
+        
+        var rgb = self.hueToRGB()
+        
+        let c = v * s
+        let m = v - c
+        
+        rgb.r = rgb.r * c + m
+        rgb.g = rgb.g * c + m
+        rgb.b = rgb.b * c + m
+        
+        return rgb
+    }
+    
+    func hueToRGB() -> RGB {
+        
+        let hPrime = h / 60.0
+        
+        let x = 1.0 - abs(hPrime.truncatingRemainder(dividingBy: 2.0) - 1.0)
+        
+        let r: CGFloat
+        let g: CGFloat
+        let b: CGFloat
+        
+        if hPrime < 1.0 {
+            
+            r = 1
+            g = x
+            b = 0
+            
+        } else if hPrime < 2.0 {
+            
+            r = x
+            g = 1
+            b = 0
+            
+        } else if hPrime < 3.0 {
+            
+            r = 0
+            g = 1
+            b = x
+            
+        } else if hPrime < 4.0 {
+            
+            r = 0
+            g = x
+            b = 1
+            
+        } else if hPrime < 5.0 {
+            
+            r = x
+            g = 0
+            b = 1
+            
+        } else {
+            
+            r = 1
+            g = 0
+            b = x
+            
+        }
+        
+        return RGB(r: r, g: g, b: b)
+    }
+}
+
+extension UIView {
+    func roundCorners(corners: UIRectCorner , radius : CGFloat = 20) {
+        DispatchQueue.main.async { [self] in
+            
+            let path = UIBezierPath(roundedRect: bounds, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
+            let mask = CAShapeLayer()
+            mask.path = path.cgPath
+            layer.mask = mask
+        }
+    }
+}
+
+extension String{
+    func addSpaceBeforeCapital() -> String {
+        
+        return self
+            .replacingOccurrences(of: "([a-z])([A-Z](?=[A-Z])[a-z]*)", with: "$1 $2", options: .regularExpression)
+            .replacingOccurrences(of: "([A-Z])([A-Z][a-z])", with: "$1 $2", options: .regularExpression)
+            .replacingOccurrences(of: "([a-z])([A-Z][a-z])", with: "$1 $2", options: .regularExpression)
+            .replacingOccurrences(of: "([a-z])([A-Z][a-z])", with: "$1 $2", options: .regularExpression)
+    }
+    
+    func translate() -> String{
+        
+        var localizedString =  NSLocalizedString(self , comment: "")
+        if(localizedString == self)||(localizedString.contains("_")){
+            // print("Searching In POD Translation")
+            // print("\(self) - translation not in MAIN")
+            if let bundle = Resource.getPodBundle(for: "Localizable", ext: "strings") {
+                localizedString = NSLocalizedString(self, tableName: nil, bundle: bundle, value: "", comment: "")
+                
+                if(localizedString == self)||(localizedString.contains("_")){
+                    
+                    print("\(self) - translation not in MAIN nor POD ")
+                    
+                }else{
+                    // print("\(self) - translation FOUND IN POD ")
+                }
+                return localizedString;
+            }
+            
+            
+        }else{
+            return localizedString
+        }
+        return self
+        
+    }
+    /// -returns: array of total lines in string
+    var lines: [String] {
+        var result: [String] = []
+        enumerateLines { line, _ in result.append(line) }
+        return result
+    }
+}
+
+public class Resource {
+    
+    static func getPodBundle(for name : String , ext : String , className : AnyClass = Resource.self) -> Bundle? {
+        
+        let appBundle = Bundle(for: className.self)
+        if let bundleUrl = appBundle.url(forResource: "IOS_CommonEditor", withExtension: "bundle") {
+            if let podBundle = Bundle(url: bundleUrl) {
+                if podBundle.url(forResource: name, withExtension: ext) != nil {
+                    return podBundle
+                }
+            }
+        }else  if Bundle.main.path(forResource: name, ofType: ext) != nil {
+            return  Bundle.main
+        }
+        return nil
+    }
+}

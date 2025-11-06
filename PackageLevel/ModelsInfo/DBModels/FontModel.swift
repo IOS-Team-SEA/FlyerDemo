@@ -336,24 +336,24 @@ class FontDM{
 //            return arrayOfFont
 //        }
    
-    static func getRealFont(nameOfFont :String) -> String {
-        //  return nameOfFont
-        var type = "ttf"
-        //    let split = nameOfFont.split(separator: ".")
-        //    if split.count > 1 {
-        //    type = String(split.last!)
-        //    }
-        //    let fontName = String(split.first!)
-        //
-        var newFontName = nameOfFont
-        if let  path = Bundle.main.path (forResource: nameOfFont, ofType: ".\(type)") {
-            let url = URL(fileURLWithPath: path)
-            let fontDataProvider = CGDataProvider(url: url as CFURL)
-            let newFont = CGFont(fontDataProvider!)
-            newFontName = newFont?.postScriptName as String? ?? nameOfFont
-        }
-        return newFontName
-        
-    }
+//    static func getRealFont(nameOfFont :String) -> String {
+//        //  return nameOfFont
+//        var type = "ttf"
+//        //    let split = nameOfFont.split(separator: ".")
+//        //    if split.count > 1 {
+//        //    type = String(split.last!)
+//        //    }
+//        //    let fontName = String(split.first!)
+//        //
+//        var newFontName = nameOfFont
+//        if let  path = Bundle.main.path (forResource: nameOfFont, ofType: ".\(type)") {
+//            let url = URL(fileURLWithPath: path)
+//            let fontDataProvider = CGDataProvider(url: url as CFURL)
+//            let newFont = CGFont(fontDataProvider!)
+//            newFontName = newFont?.postScriptName as String? ?? nameOfFont
+//        }
+//        return newFontName
+//        
+//    }
     
 }

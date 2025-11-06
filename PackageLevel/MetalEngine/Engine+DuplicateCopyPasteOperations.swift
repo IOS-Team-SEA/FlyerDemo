@@ -154,7 +154,7 @@ extension MetalEngine {
     
     func addParentToChildDictRecursively(parentInfo: ParentModel){
         var children = parentInfo.children
-        printLog("children in parent: \(children)")
+        logger.printLog("children in parent: \(children)")
         
         for child in children{
             if child.modelType == .Parent{
@@ -290,7 +290,7 @@ extension MetalEngine {
             // if duplicate same parent id as currentText if paste then currentSuperModel id
            
             if !isDuplicate{
-                logError("Start Time Issue ")
+                logger.logError("Start Time Issue ")
                 let parentStartTime = templateHandler.getNewStartTimeForNewComponent(childStartTime: templateHandler.currentSuperModel?.baseTimeline.startTime ?? 0, newParentID: templateHandler.currentSuperModel!.parentId)
 //                let parentStartTime = templateHandler.currentParentModel?.baseTimeline.startTime
                 let parentDuration = templateHandler.currentSuperModel?.baseTimeline.duration

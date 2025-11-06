@@ -5,22 +5,24 @@
 //  Created by IRIS STUDIO IOS on 21/01/25.
 //
 
+import Foundation
+
 extension MetalEngine {
     func observeCurrentActions(){
         
        
         
         guard let templateHandler = self.templateHandler else {
-            printLog("template handler nil")
+            logger.printLog("template handler nil")
             return }
         
         actionStateCancellables.removeAll()
-        logVerbose("Engine + CurrentActions listeners ON \(actionStateCancellables.count)")
+        logger.logVerbose("Engine + CurrentActions listeners ON \(actionStateCancellables.count)")
         
         templateHandler.$setSelectedModelChanged.dropFirst().sink { [weak self] model in
             
             guard var self = self else { return }
-            logVerbose("Engine + modelChange to \(model?.modelType.rawValue)")
+            logger.logVerbose("Engine + modelChange to \(model?.modelType.rawValue)")
             
             
 
@@ -42,7 +44,7 @@ extension MetalEngine {
         
         templateHandler.currentActionState.$pasteModel.dropFirst().sink { [weak self] pasteModel in
             guard let self = self else { return }
-            printLog("pasteModel")
+            logger.printLog("pasteModel")
             
             // copied model -> paste process
             // print " nothing to copy "
@@ -77,23 +79,14 @@ extension MetalEngine {
                 var id = templateHandler.lastSelectedId ?? templateHandler.currentModel?.modelId ?? templateHandler.currentTemplateInfo?.pageInfo.first?.modelId ?? -1
                 
                 templateHandler.deepSetCurrentModel(id: id, smartSelect: true)
-                logError("This Means Export Dismissed")
+                logger.logError("This Means Export Dismissed")
             }
-//            if value == true{
-//                if templateHandler.lastSelectedId != templateHandler.currentModel?.modelId{
-//                    templateHandler.deepSetCurrentModel(id: templateHandler.lastSelectedId!)
-//                    
-//                }else{
-//                    templateHandler.deepSetCurrentModel(id: templateHandler.currentTemplateInfo!.pageInfo.first!.modelId)
-//                }
-//            }else{
-//                templateHandler.deepSetCurrentModel(id: templateHandler.currentModel!.modelId)
-//            }
+
         }.store(in: &actionStateCancellables)
         
         templateHandler.currentActionState.$duplicateModel.dropFirst().sink { [weak self] duplicateModel in
             guard let self = self else { return }
-            printLog("duplicateModel")
+            logger.printLog("duplicateModel")
             if let currentModel = templateHandler.currentModel{
                 if currentModel.modelId == duplicateModel{
                     if currentModel.modelType == .Page{
@@ -166,17 +159,18 @@ extension MetalEngine {
         
         templateHandler.currentActionState.$addNewText.dropFirst().sink { [weak self] addNewText in
             guard let self = self else { return }
-            printLog("addNewText")
+            logger.printLog("addNewText")
             Task{
                 await self.addNewText(text: addNewText, model: self.templateHandler.currentModel!, currentTime: Float(self.timeLoopHandler!.currentTime), isDuplicate: false)
-                self.analyticsLogger.logEditorInteraction(action: .addText)
+//                self.analyticsLogger.logEditorInteraction(action: .addText)
+                self.engineConfig.logAddText()
             }
         }.store(in: &actionStateCancellables)
         
         
         templateHandler.currentActionState.$addImage.dropFirst().sink {[weak self] addImage in
             guard let self = self else { return }
-            printLog("addImage")
+            logger.printLog("addImage")
             
             if let parentModel = templateHandler.currentModel as? ParentModel{
                 if let addImageModel = addImage{
@@ -223,7 +217,7 @@ extension MetalEngine {
                             newSize = CGSize(width: CGFloat(stickerInfo.prevAvailableHeight),height: CGFloat(stickerInfo.prevAvailableHeight))
                         }
                         
-                        if let image = await addImage?.getImage() {
+                        if let image = await addImage?.getImage(engineConfig: self.engineConfig) {
                             let imageSize = image.mySize
                             
                             // Get proportionally sized image based on the target size
@@ -273,7 +267,8 @@ extension MetalEngine {
                             
                             self.addNewStickerInfo(StickerInfoId: stickerID, refSize: self.templateHandler!.currentTemplateInfo!.ratioSize, isDuplicate: false, isAdded: true)
                             
-                            self.analyticsLogger.logEditorInteraction(action: .addSticker)
+//                            self.analyticsLogger.logEditorInteraction(action: .addSticker)
+                            self.engineConfig.logAddSticker()
                         }
                     }
                     
@@ -283,7 +278,7 @@ extension MetalEngine {
         
         templateHandler.currentActionState.$replaceSticker.dropFirst().sink { [weak self] replaceSticker in
             guard let self = self else { return }
-            printLog("replaceSticker")
+            logger.printLog("replaceSticker")
        
             if let currentModel = templateHandler.currentModel as? StickerInfo {
                 // check if current model's baseSize width is greater or height
@@ -299,13 +294,13 @@ extension MetalEngine {
                     }else{
                         newSize = CGSize(width: CGFloat(currentModel.prevAvailableHeight),height: CGFloat(currentModel.prevAvailableHeight))
                     }
-                    if let prevImage = await currentModel.changeOrReplaceImage?.imageModel.getImage(){
+                    if let prevImage = await currentModel.changeOrReplaceImage?.imageModel.getImage(engineConfig: self.engineConfig){
                         let prevCropRect = (currentModel.changeOrReplaceImage?.imageModel.cropRect)!
                         let prevImageSize = prevImage.mySize
                         let prevCropSize = CGSize(width: prevImageSize.width * prevCropRect.size.width, height: prevImageSize.height * prevCropRect.size.height)
                         let prevImageRatio = prevCropSize.width / prevCropSize.height
                         
-                        if let image = await replaceSticker?.getImage() {
+                        if let image = await replaceSticker?.getImage(engineConfig: self.engineConfig) {
                             let imageSize = image.mySize
                             let tsize = getProportionalSize(currentSize: imageSize, newSize: newSize)
                             
@@ -361,7 +356,8 @@ extension MetalEngine {
                                 self.templateHandler!.currentActionState.updateThumb = true
                             }
                             
-                            self.analyticsLogger.logEditorInteraction(action: .replaceSticker)
+//                            self.analyticsLogger.logEditorInteraction(action: .replaceSticker)
+                            self.engineConfig.logReplaceSticker()
                         }
                     }
                     
@@ -380,7 +376,7 @@ extension MetalEngine {
         
         templateHandler.currentActionState.$addNewpage.dropFirst().sink { [weak self] addNewPage in
             guard let self = self else { return }
-            printLog("addNewPage")
+            logger.printLog("addNewPage")
             let page = PageInfo.createDefaultPage(bgType: (templateHandler.currentPageModel?.bgContent)!,baseSize: templateHandler.currentTemplateInfo?.ratioSize)
             page.orderInParent = templateHandler.currentPageModel!.orderInParent + 1
             page.imageType = templateHandler.currentPageModel!.imageType
@@ -397,30 +393,6 @@ extension MetalEngine {
             guard let moveModel = value else {return}
                         
             
-//            if moveModel.type == .OrderChangeOnly , let orderChangeObject = moveModel.orderChange{
-//                
-//                
-//                // logic to update order
-//                
-//                // get parent of child
-//                // let parent know to change the order
-//                
-//                guard let childToMove = templateHandler.getModel(modelId: orderChangeObject.selectedModelId) ,
-//                      let parent = templateHandler.getModel(modelId: childToMove.parentId) as? ParentModel  else {
-//                    logError("Either Parent Or Child Is Nil In MetalDict")
-//                    return
-//                }
-//                
-//                parent.changeOrder(child: childToMove, oldOrder: orderChangeObject.oldOrder, newOrder: orderChangeObject.newOrder)
-//                
-//                return
-//            } else {
-                
-                
-                // check moveModel not nil
-                
-            
-            
             // we are checking if any parent needs to be unDelete
             
             if moveModel.type == .UnGroup || moveModel.type == .Group {
@@ -433,7 +405,7 @@ extension MetalEngine {
                             _ = DBManager.shared.updateSoftDelete(modelId: parentIdToAdd, newValue: false.toInt())
                         }
 
-                        logInfo("Group/Ungroup Parent \(parentIdToAdd) Added -DB")
+                        logger.logInfo("Group/Ungroup Parent \(parentIdToAdd) Added -DB")
 
                     }
                     
@@ -444,7 +416,7 @@ extension MetalEngine {
             
             
                 if moveModel.oldMM.count<1{
-                    printLog("move model is empty")
+                    logger.printLog("move model is empty")
                     return
                 }
                 
@@ -485,11 +457,11 @@ extension MetalEngine {
                         }
                         
                         if oldParent.modelId == newParent.modelId{
-                            printLog("NKG Old Parent Id is Same as New Parent Id \(newParent.modelId)");
+                            logger.printLog("NKG Old Parent Id is Same as New Parent Id \(newParent.modelId)");
                            
                             oldParent.changeOrder(child: childModel, oldOrder: oldChildValue.orderInParent - 1, newOrder: newChildValue.orderInParent)
                             
-                            printLog("order In change done")
+                            logger.printLog("order In change done")
                         }// end oldParent and newParent is same
                         
                         else{
@@ -497,7 +469,7 @@ extension MetalEngine {
                             // Remove Old Child From Parent
                             
                             if let index = oldParent.children.firstIndex(where: {$0.modelId == oldChildValue.modelID}){
-                                printLog("NKG remove child from the previous parent \(newParent.modelId)");
+                                logger.printLog("NKG remove child from the previous parent \(newParent.modelId)");
                                 oldParent.children.remove(at: index)
                                 oldParent.decreaseOrderFromIndex(oldChildValue.orderInParent)
                             }
@@ -562,7 +534,7 @@ extension MetalEngine {
                         }
 
                         parent.softDelete = true
-                        logInfo("Group/Ungroup Parent \(parentIdToAdd) Deleted -DB")
+                        logger.logInfo("Group/Ungroup Parent \(parentIdToAdd) Deleted -DB")
 
                     }
                     
@@ -616,11 +588,12 @@ extension MetalEngine {
             if !isDBDisabled{
                 _ = DBManager.shared.updateTemplateRatioId(templateId: templateHandler.currentTemplateInfo!.templateId, newValue: ratioModel!.id)
             }
-            if let ratio = templateHandler.currentTemplateInfo?.ratioInfo.getRatioInfo(ratioInfo: ratioModel!, refSize: BASE_SIZE){
+            if let ratio = templateHandler.currentTemplateInfo?.ratioInfo.getRatioInfo(ratioInfo: ratioModel!, refSize: engineConfig.BASE_SIZE, logger: logger){
                 templateHandler.currentTemplateInfo?.ratioInfo = ratio
             }
       
-            self.analyticsLogger.logEditorInteraction(action: .resizeTapped)
+//            self.analyticsLogger.logEditorInteraction(action: .resizeTapped)
+            engineConfig.logResizeTapped()
 
             
         }.store(in: &actionStateCancellables)
@@ -689,7 +662,8 @@ extension MetalEngine {
             
             audioPlayer?.templateHandler = templateHandler
             
-            self.analyticsLogger.logEditorInteraction(action: .addMusic)
+//            self.analyticsLogger.logEditorInteraction(action: .addMusic)
+            engineConfig.logAddMusic()
 
         }.store(in: &actionStateCancellables)
         
@@ -731,7 +705,7 @@ extension MetalEngine {
         }.store(in: &actionStateCancellables)
         
         guard let templateHandler = self.templateHandler else {
-            logError("template handler nil")
+            logger.logError("template handler nil")
             return }
 
         templateHandler.currentTemplateInfo?.$ratioInfo.dropFirst().sink(receiveValue: {[weak self] newRatioModel in
@@ -749,7 +723,7 @@ extension MetalEngine {
             Task { [weak self] in
                 guard let self = self else { return }
                 
-               await  sceneManager.changeRatio(ratio: newRefSize, refSize: BASE_SIZE)
+                await  sceneManager.changeRatio(ratio: newRefSize, refSize: engineConfig.BASE_SIZE)
                 await MainActor.run {
 //                    guard let self = self else { return }
                     self.viewManager?.ratioDidChange(page: templateHandler.currentPageModel!)
@@ -787,7 +761,8 @@ extension MetalEngine {
                 templateHandler.currentActionState.multiModeSelected = false
                 templateHandler.currentActionState.timelineShow = true
                 templateHandler.currentActionState.showNavgiationItems = true
-                self.analyticsLogger.logEditorInteraction(action: .group)
+//                self.analyticsLogger.logEditorInteraction(action: .group)
+                engineConfig.logGroup()
 
                 
             }
@@ -917,7 +892,7 @@ extension MetalEngine {
         
         templateHandler.currentActionState.$addItemToMultiSelect.dropFirst().sink { [weak self] addItemID in
             guard let self = self else { return }
-            printLog("item added")
+            logger.printLog("item added")
             let model = templateHandler.getModel(modelId: addItemID)
             
            // let multiSelectModel = MultiSelectedArrayObject(id: addItemID, thumbImage: (model?.thumbImage ?? UIImage(named: "b0"))!)

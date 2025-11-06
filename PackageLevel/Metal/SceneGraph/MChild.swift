@@ -28,6 +28,7 @@ enum PreviewAnimType {
 }
 
 class MChild :  Renderable{
+    
     @Injected var shaderLibrary : ShaderLibrary
     
     var mOrder :Int = -1
@@ -320,6 +321,8 @@ class MChild :  Renderable{
     
     var cached_model_matrix : matrix_float4x4 = matrix_identity_float4x4
     
+    var logger: PackageLogger?
+    
     var model_matrix : matrix_float4x4 {
         if _use_cached_matrix {
             return cached_model_matrix
@@ -351,11 +354,16 @@ class MChild :  Renderable{
        setModel(model: model)
     }
     
+    func setPackageLogger(logger: PackageLogger){
+        self.logger = logger
+        animation.setPackageLogger(logger: logger)
+    }
+    
     func setModel(model:BaseModelProtocol) {
         
         if model is TextInfo {
             
-            printLog("")
+            logger?.printLog("")
         }
         setmOrderInParent(order: model.orderInParent)
         setMStartTime(model.baseTimeline.startTime)
@@ -461,18 +469,18 @@ class MChild :  Renderable{
         let parameters = newResult.getParameters()
         var tempTransform = matrix_identity_float4x4
       
-        parameters.getScale().applyTransformation(selfInfo: getSelfBounds(), parent: getParentBounds(), root: getRootBounds(), transformation: &tempTransform)
-        parameters.getTranslation().applyTransformation(selfRect: getSelfBounds(), parent: getParentBounds(), root: getRootBounds(), transformation: &tempTransform,xBase: 0,yBase: 0)
+        parameters.getScale().applyTransformation(selfInfo: getSelfBounds(), parent: getParentBounds(), root: getRootBounds(), transformation: &tempTransform, logger: logger)
+        parameters.getTranslation().applyTransformation(selfRect: getSelfBounds(), parent: getParentBounds(), root: getRootBounds(), transformation: &tempTransform,xBase: 0,yBase: 0, logger: logger)
     
 
         parameters.getSkew().applyTransformation(self: getSelfBounds(), parent: getParentBounds(), root: getRootBounds(), transformation: &tempTransform)
         parameters.getRotationX().applyTransformation(self: getSelfBounds(), parent: getParentBounds(), root: getRootBounds(), transformation: &tempTransform)
        parameters.getRotationY().applyTransformation(getSelfBounds(), getParentBounds(), getRootBounds(), &tempTransform)
-        parameters.getRotationZ().applyTransformation(startAngle: zRotation, selfInfo: getSelfBounds(), parent: getParentBounds(), root: getRootBounds(), transformation: &tempTransform)
+        parameters.getRotationZ().applyTransformation(startAngle: zRotation, selfInfo: getSelfBounds(), parent: getParentBounds(), root: getRootBounds(), transformation: &tempTransform, logger: logger)
         
         let opacity = parameters.getAlpha().x
         
-        printLog("animOpacity : ",opacity)
+        logger?.printLog("animOpacity : \(opacity)")
 //        setmOpacity(opacity: opacity) //0.1 + ( time * 0.1 )
         self.mOpacity *= opacity
 //        self.opacity *= Double(opacity)
@@ -618,7 +626,7 @@ class MChild :  Renderable{
                 
                 if animPreviewMode != .None && isInPreviewAnimation {
                     
-                    printLog("prevAnim:",animCurrentTime , identification)
+                    logger?.printLog("prevAnim: \(animCurrentTime) \(identification)")
                     updateAnimation(time: animCurrentTime )
                 }
                 

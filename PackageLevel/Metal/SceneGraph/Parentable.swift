@@ -23,7 +23,7 @@ extension MParent {
      func addChild(_ childObject: MChild,at:Int) {
         if childern.endIndex < at{
             childern.append(childObject)
-            logError("Should'nt Happen I Think \(childern.endIndex) vs Order : \(at)")
+            logger?.logError("Should'nt Happen I Think \(childern.endIndex) vs Order : \(at)")
         }
         else{
             childern.insert(childObject, at: at)

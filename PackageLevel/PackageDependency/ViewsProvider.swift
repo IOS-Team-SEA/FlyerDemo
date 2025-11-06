@@ -17,8 +17,7 @@ struct ControlBarEntry {
 public protocol EditControlBarProtocol: View {}
 public protocol MuteControlProtocol: View {}
 
-
-public protocol EditControlBarProvider {
+protocol EditControlBarProvider {
     associatedtype ControlBarView: View
     func makeEditControlBar(for model: ParentInfo, id: Int) -> ControlBarView
 }
@@ -26,13 +25,13 @@ public protocol EditControlBarProvider {
 public class AnyEditControlBarProvider {
     private let _makeEditControlBar: (ParentInfo, Int) -> AnyView
     
-    public init<P: EditControlBarProvider>(_ provider: P) {
+    init<P: EditControlBarProvider>(_ provider: P) {
         _makeEditControlBar = { model, id in
             AnyView(provider.makeEditControlBar(for: model, id: id))
         }
     }
     
-    public func makeEditControlBar(for model: ParentInfo, id: Int) -> AnyView {
+    func makeEditControlBar(for model: ParentInfo, id: Int) -> AnyView {
         _makeEditControlBar(model, id)
     }
 }

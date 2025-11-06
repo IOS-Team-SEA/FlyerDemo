@@ -27,6 +27,10 @@ public protocol DependencyResolverProtocol: AnyObject {
 
 public enum DependencyResolver {
     public private(set) static var shared: DependencyResolverProtocol?
+    
+    public static func register(_ resolver: DependencyResolverProtocol) {
+            DependencyResolver.shared = resolver
+        }
 }
 
 @propertyWrapper

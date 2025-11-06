@@ -17,7 +17,7 @@ extension DBManager{
         let query = "SELECT * FROM \(TABLE_TEMPLATE) WHERE CATEGORY = '\(ByCategoryName)';"
         var templatesIDs = [Int]()
         guard let resultSet = try? runQuery(query, values: nil) else {
-            logger.logError("No Templates For Category Found")
+            logger?.logError("No Templates For Category Found")
             return templatesIDs
         }
         

@@ -74,7 +74,7 @@ extension MetalEngine {
                        }
                        
                    }else{
-                       printLog("model is not avilable for this item id")
+                       logger.printLog("model is not avilable for this item id")
                    }
                    
                  }
@@ -116,7 +116,7 @@ extension MetalEngine {
                    pageModel.localPath = texture.content.localPath
                    DBManager.shared.updateImageModel(from: texture.content, imageID: pageModel.dataId)
                    
-                   printLog("texture")
+                   logger.printLog("texture")
                }
                if let userImage = bgContent as? BGUserImage{
                    pageModel.imageType = .STORAGEIMAGE
@@ -138,8 +138,8 @@ extension MetalEngine {
                    _ =  DBManager.shared.updateImageColorInfo(modelId: pageModel.dataId, newValue: convertGradientToJSONString(gradient)!, type: pageModel.imageType.rawValue)
                }
                templateHandler.currentActionState.updatePageAndParentThumb = true 
-               analyticsLogger.logEditorInteraction(action: .addBackground)
-         
+//               analyticsLogger.logEditorInteraction(action: .addBackground)
+               engineConfig.logAddBackground()
                
            }.store(in: &modelPropertiesCancellables)
        }

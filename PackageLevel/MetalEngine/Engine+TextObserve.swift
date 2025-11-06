@@ -20,7 +20,7 @@ extension MetalEngine {
                 if !(isDBDisabled){
                     _ = DBManager.shared.updateTextFont(modelId: textModel.textId, newValue: textFont)
                 }
-                textModel.textFont = UIFont(name: getRealFont(nameOfFont: textFont), size: 14) ?? .systemFont(ofSize: 14)
+                textModel.textFont = UIFont(name: FontDM.getRealFont(nameOfFont: textFont, engineConfig: engineConfig), size: 14) ?? .systemFont(ofSize: 14)
             }.store(in: &modelPropertiesCancellables)
         
             
@@ -164,12 +164,12 @@ extension MetalEngine {
                     let newText = editedText
                     var newSize = CGRect.zero
                     var refSize =  currentParent.baseFrame.size
-                    refSize.width = refSize.width * 0.8 * UIStateManager.shared.contentscaleFactor
-                    refSize.height = refSize.height * UIStateManager.shared.contentscaleFactor
+                    refSize.width = refSize.width * 0.8 * engineConfig.contentScaleFactor//UIStateManager.shared.contentscaleFactor
+                    refSize.height = refSize.height * engineConfig.contentScaleFactor//UIStateManager.shared.contentscaleFactor
                     
                 let textValue = ctCalc.getBoundsForCurrentFontSize(newText: newText, textProperties: textModel.textProperty, parentSize: CGSize(width: refSize.width, height: refSize.height))
                 
-                printLog("NSK NewSize from width \(textValue.width), height : \(textValue.height)")
+                logger.printLog("NSK NewSize from width \(textValue.width), height : \(textValue.height)")
                /*/ newSize.size = CGSize(width: textValue.width/UIStateManager.shared.contentscaleFactor, height: textValue.height/UIStateManager.shared.contentscaleFactor)*/
                 newSize.size = CGSize(width: textValue.width, height: textValue.height)
                 
@@ -186,8 +186,8 @@ extension MetalEngine {
                 var realW = newSize.size.width + ( 4 * widthMargin )
                 var realH = newSize.size.height + ( 2 * heightMargin )
                 
-                realW = realW / UIStateManager.shared.contentscaleFactor
-                realH = realH / UIStateManager.shared.contentscaleFactor
+                realW = realW / engineConfig.contentScaleFactor//UIStateManager.shared.contentscaleFactor
+                realH = realH / engineConfig.contentScaleFactor//UIStateManager.shared.contentscaleFactor
                 
                 if oldText == newText && oldSize.width == realW && oldSize.height == realH {
                     return
@@ -202,8 +202,8 @@ extension MetalEngine {
                     textModel.textModelChnaged = TextModelChanged(oldText: oldText, newText: newText, oldSize: oldSize, newSize: CGSize(width: realW, height: realH))
                 }
                 
-                self.analyticsLogger.logEditorInteraction(action: .updateText)
-
+//                self.analyticsLogger.logEditorInteraction(action: .updateText)
+                engineConfig.logUpdateText()
                 
             }.store(in: &modelPropertiesCancellables)
             

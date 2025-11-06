@@ -20,3 +20,15 @@ func parseGradient(from jsonString: String) -> GradientInfo? {
         return nil
     }
 }
+
+func convertGradientToJSONString(_ gradient: GradientInfo) -> String? {
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = .prettyPrinted
+    do {
+        let data = try encoder.encode(gradient)
+        return String(data: data, encoding: .utf8)
+    } catch {
+        print("Error encoding JSON: \(error)")
+        return nil
+    }
+}

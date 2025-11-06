@@ -36,6 +36,8 @@ class IOSMetalView : UIView {
     var stopOfflineRecording = true
    // var renderDuration = MetalDefaults.RenderTotalTime
    
+    var logger: PackageLogger?
+    var sceneConfig: SceneConfiguration?
     
     #if os(iOS)
     override class var layerClass: AnyClass {
@@ -69,6 +71,11 @@ class IOSMetalView : UIView {
         self.layer.masksToBounds = false
     }
     
+    func setPackageLogger(logger: PackageLogger, sceneConfig: SceneConfiguration){
+        self.logger = logger
+        self.sceneConfig = sceneConfig
+        self.sceneConfig?.contentScaleFactor = MyScreen!.nativeScale
+    }
     
     func commonInit(){
         #if os(iOS)
@@ -77,7 +84,7 @@ class IOSMetalView : UIView {
             _metalLayer = (self.layer as! CAMetalLayer)
         MyScreen = self.window?.screen ?? UIScreen.main
         let screen = MyScreen!
-        UIStateManager.shared.contentscaleFactor = screen.nativeScale//UIStateManager.shared.getContentScaleFactor()
+//        UIStateManager.shared.contentscaleFactor = screen.nativeScale//UIStateManager.shared.getContentScaleFactor()
         drawableSize.width = frame.width * screen.nativeScale
         drawableSize.height *= frame.height * screen.nativeScale
 
@@ -150,7 +157,7 @@ class IOSMetalView : UIView {
             }
             
         } else {
-            printLog(">> ERROR: Failed to get a drawable!")
+            logger?.printLog(">> ERROR: Failed to get a drawable!")
             _renderPassDescriptor = nil
         }
         
@@ -397,9 +404,9 @@ extension IOSMetalView  {
             printLog("tvOS")
 #elseif os(iOS)
 #if targetEnvironment(macCatalyst)
-            printLog("macOS - Catalyst")
+            logger?.printLog("macOS - Catalyst")
 #else
-            printLog("iOS")
+            logger?.printLog("iOS")
 #endif
 #endif
             _metalLayer.drawableSize = drawableSize
@@ -425,136 +432,14 @@ extension IOSMetalView  {
         //}
         
     }
-    
-//    func addPage(child:MChild){
-//        onMetalThread {
-//            //            if let page = child as? MPageInfo , let children =  page.childern {
-//            //                for eachChild  in children  {
-//            self.renderer.parent.addChild(child)
-//            //                }
-//            //            }
-//
-//        }
-//    }
-//
-//    func rotateBy(angle: Float) {
-//        onMetalThread { [self] in
-//            renderer.rotate(angleInRad: angle)
-//
-//        }
-//
-//    }
-//    func  changeContent(by model:contentModel){
-//        renderer.getFirstChild().changeModel(model: model)// changeContent(by: model)
-//    }
-//
-//    func moveTexture(x:Float,y:Float){
-//        onMetalThread { [self] in
-//            renderer.moveTexture(x: x, y: y)
-//
-//        }
-//    }
-//    func scaleTexture(by value:Float,direction:ScalingFactor){
-//        onMetalThread { [self] in
-//            renderer.scaletexture(by: value, direction: direction)
-//
-//        }
-//    }
-//    func flippable(by direction:Flippable){
-//        if direction == .None{
-//            renderer.getFirstChild().flipType = 0.0
-//        }else if direction == .Vertical{
-//            renderer.getFirstChild().flipType = 1.0
-//        }else{
-//            renderer.getFirstChild().flipType = 2.0
-//        }
-//
-//    }
+
     
 }
 extension IOSMetalView {
     
     
     func startRenderingOffline(){
-       
-
-//        onMetalThread { [self] in
-//            recorder = IOSMetalRecorder(maxDuration: renderDuration)
-//
-//          var  isRecording = true
-//            stopOfflineRecording = false
-//            let FPS = MetalDefaults.PreferredFrameRate
-//            let TotalTime : Double = MetalDefaults.RenderTotalTime
-//            let NumberOfFrames = Int(Double(FPS) * Double(TotalTime ))
-//            var frameDecodedCount = 0
-//            var interval : Float = Float( 1.0/Float(FPS) )
-//            
-//            var gupReadyToRender = true
-//            var startedReording = false
-//            if isRecording {
-//
-//            var isAudioReady = false
-//            recorder.configureAUDIO { (bool) in
-//                isAudioReady = bool
-//                
-//            }
-//            
-//            while frameDecodedCount <= NumberOfFrames{
-//                if stopOfflineRecording {
-//                    break
-//                }
-//                if isAudioReady {
-//                   // var size = CGSize(width: drawableSize.width*contentScaleFactor, height: drawableSize.height*contentScaleFactor)
-//                    let width =  drawableSize.width * MyScreen.nativeScale
-//                    let height =  drawableSize.height * MyScreen.nativeScale
-//                    let dSize = CGSize(width: width, height: height)
-//                    if !startedReording {
-//                        let didSucced = recorder.startRecording(size: dSize, Duration: TotalTime)
-//                        startedReording = true
-////                        if didSucced {
-////                            self.recorder.start()
-////                        }
-//                    }
-//                
-//                    
-//                    if gupReadyToRender {
-//                        gupReadyToRender = false
-//                        
-//                        var presentationTime = Float(frameDecodedCount) * (interval)
-//                       // onMetalThread { [self] in
-//                            autoreleasepool {
-//                                let drawable = currentDrawable?.texture
-//                                callDrawMethodForNextFrame(currentTime: presentationTime) { [self] in
-//                                   // onMetalThread {
-//                                        if isRecording {
-//                                            
-//                                            var status = ((presentationTime/Float(TotalTime))*100).rounded()
-//                                            feedbackListner?.showSavingProgress(percentage: status)
-//                                            recorder.writeFrame(forTexture:drawable!, framePresentationTime: CMTime(seconds: Double(presentationTime), preferredTimescale: CMTimeScale(FPS)))
-//                                            frameDecodedCount = frameDecodedCount + 1
-//                                        }
-//                                        gupReadyToRender = true
-//                                   // }
-//                                   
-//
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//                
-//            }
-//            recorder.isVideoCompleted = true
-//            let presentationTime = Float(frameDecodedCount) * (interval)
-//
-//            recorder.startWritingAudio(maxDuration: stopOfflineRecording ? Double(presentationTime) : renderDuration)
-//            recorder.endRecording { [self] in
-//                saveToCameraRoll(recorder.videoURL)
-//                stopOfflineRecording ? feedbackListner?.didCancelledSaving() : feedbackListner?.didSuccessSaving()
-//                stopOfflineRecording = false
-//
-//            }
-//        }
+ 
     }
     
     func stopOffline(){

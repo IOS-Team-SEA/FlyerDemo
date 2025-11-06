@@ -4,6 +4,7 @@
 //
 //  Created by IRIS STUDIO IOS on 21/01/25.
 //
+import Foundation
 
 extension MetalEngine {
     internal func observeAsCurrentBaseModel(_ baseModel: BaseModel) {
@@ -51,7 +52,7 @@ extension MetalEngine {
                         //                              templateHander.duration = newDuration
                         /// looper.currentTime = pageInfo.startTime
                         
-                        logError("Not Reqiured when deleting or adding atleast here")
+                        logger.logError("Not Reqiured when deleting or adding atleast here")
                         templateHandler.setCurrentTime(pm.baseTimeline.startTime)
                         // Set Id
                         
@@ -82,7 +83,8 @@ extension MetalEngine {
                if !isDBDisabled{
                    _ = DBManager.shared.updateInAnimationTemplateId(modelId:baseModel.modelId, newValue: inAnimation.animationTemplateId)
                }
-               analyticsLogger.logEditorInteraction(action: .addAnimation)
+//               analyticsLogger.logEditorInteraction(action: .addAnimation)
+               engineConfig.logAddAnimation()
             }.store(in: &modelPropertiesCancellables)
             
             // Subscriber for inAnimationDuration
@@ -103,8 +105,8 @@ extension MetalEngine {
                    // Handle outAnimation change
                    _ = DBManager.shared.updateOutAnimationTemplateId(modelId:baseModel.modelId, newValue: outAnimation.animationTemplateId)
                }
-               analyticsLogger.logEditorInteraction(action: .addAnimation)
-
+//               analyticsLogger.logEditorInteraction(action: .addAnimation)
+               engineConfig.logAddAnimation()
             }.store(in: &modelPropertiesCancellables)
             
             // Subscriber for outAnimationDuration
@@ -124,8 +126,8 @@ extension MetalEngine {
                    // Handle loopAnimation change
                    _ = DBManager.shared.updateLoopAnimationTemplateId(modelId:baseModel.modelId, newValue: loopAnimation.animationTemplateId)
                }
-               analyticsLogger.logEditorInteraction(action: .addAnimation)
-
+//               analyticsLogger.logEditorInteraction(action: .addAnimation)
+               engineConfig.logAddAnimation()
             }.store(in: &modelPropertiesCancellables)
             
             // Subscriber for loopAnimationDuration
