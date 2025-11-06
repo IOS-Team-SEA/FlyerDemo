@@ -91,6 +91,6 @@ import UIKit
  DBLogger
  EngineConfiguration
  LayersConfiguration
- 
+ TimelineConfiguration
  
  */
