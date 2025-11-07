@@ -1,6 +1,33 @@
 {
-  "originHash" : "edf512815619ed6bb2e67b3bdb38a134d5e8f6b3f3f79c05028ab9cbffc0efd2",
+  "originHash" : "cc884ec4c0ea0b885d0a64d4e09cb808ef2752422effc0f68fcd46f663886934",
   "pins" : [
+    {
+      "identity" : "devicekit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/devicekit/DeviceKit",
+      "state" : {
+        "branch" : "master",
+        "revision" : "55ad16f3b52e2e28a06f341a70efd21f946f5efc"
+      }
+    },
+    {
+      "identity" : "exceptioncatcher",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/sindresorhus/ExceptionCatcher",
+      "state" : {
+        "branch" : "main",
+        "revision" : "9e57a89e7ed5e11cbc04fbaa5f1397448f91bb73"
+      }
+    },
+    {
+      "identity" : "facebook-ios-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/facebook/facebook-ios-sdk",
+      "state" : {
+        "revision" : "c19607d535864533523d1f437c84035e5fb101cf",
+        "version" : "14.1.0"
+      }
+    },
     {
       "identity" : "fmdb",
       "kind" : "remoteSourceControl",
@@ -8,6 +35,87 @@
       "state" : {
         "revision" : "1227a3fa2b9916bfd75fe380eb45cd210e69e251",
         "version" : "2.7.12"
+      }
+    },
+    {
+      "identity" : "ios_commonutilspm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Mobisoft-Labs/IOS_CommonUtilSPM.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "b01a5f462461c75f5b6605092af25b1fd7687133"
+      }
+    },
+    {
+      "identity" : "ios_diagnosticsspm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Mobisoft-Labs/IOS_DiagnosticsSPM.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "ed33cd32ef01d001f4ecda741a4d49e794d7c577"
+      }
+    },
+    {
+      "identity" : "ios_loaderspm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Mobisoft-Labs/IOS_LoaderSPM.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "cba0f772bafcd885c4934e73e16379bacb29b15c"
+      }
+    },
+    {
+      "identity" : "lottie-spm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/airbnb/lottie-spm.git",
+      "state" : {
+        "revision" : "04f2fd18cc9404a0a0917265a449002674f24ec9",
+        "version" : "4.5.2"
+      }
+    },
+    {
+      "identity" : "mantis",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/guoyingtao/Mantis.git",
+      "state" : {
+        "revision" : "c7152fa5cd09cfb71d803c652db4032640ceb1b0",
+        "version" : "2.18.0"
+      }
+    },
+    {
+      "identity" : "snapkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SnapKit/SnapKit",
+      "state" : {
+        "revision" : "2842e6e84e82eb9a8dac0100ca90d9444b0307f4",
+        "version" : "5.7.1"
+      }
+    },
+    {
+      "identity" : "swinject",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Swinject/Swinject.git",
+      "state" : {
+        "revision" : "b685b549fe4d8ae265fc7a2f27d0789720425d69",
+        "version" : "2.10.0"
+      }
+    },
+    {
+      "identity" : "unifiedpickerkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Mobisoft-Labs/UnifiedPickerKit.git",
+      "state" : {
+        "revision" : "f599fd88341cd370e66c840603caeeeb0f79496d",
+        "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "zip",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/marmelroy/Zip",
+      "state" : {
+        "revision" : "67fa55813b9e7b3b9acee9c0ae501def28746d76",
+        "version" : "2.1.2"
       }
     }
   ],

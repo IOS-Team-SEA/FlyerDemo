@@ -7,7 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A04B45002EBB172D0049803F /* FMDB in Frameworks */ = {isa = PBXBuildFile; productRef = A04B44FF2EBB172D0049803F /* FMDB */; };
+		A04B462C2EBC8B500049803F /* IOS_CommonEditor in Frameworks */ = {isa = PBXBuildFile; productRef = A04B462B2EBC8B500049803F /* IOS_CommonEditor */; };
+		A04B47B22EBCA4800049803F /* Mantis in Frameworks */ = {isa = PBXBuildFile; productRef = A04B47B12EBCA4800049803F /* Mantis */; };
+		A04B47B52EBCA5C90049803F /* UnifiedPickerKit in Frameworks */ = {isa = PBXBuildFile; productRef = A04B47B42EBCA5C90049803F /* UnifiedPickerKit */; };
+		A04B47B82EBCA6030049803F /* IOS_LoaderSPM in Frameworks */ = {isa = PBXBuildFile; productRef = A04B47B72EBCA6030049803F /* IOS_LoaderSPM */; };
+		A04B47BB2EBCA6800049803F /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = A04B47BA2EBCA6800049803F /* SnapKit */; };
+		A04B47BE2EBCA6A10049803F /* IOS_CommonUtilSPM in Frameworks */ = {isa = PBXBuildFile; productRef = A04B47BD2EBCA6A10049803F /* IOS_CommonUtilSPM */; };
+		A04B48342EBCB8200049803F /* Swinject in Frameworks */ = {isa = PBXBuildFile; productRef = A04B48332EBCB8200049803F /* Swinject */; };
+		A04B48932EBCC9B30049803F /* FacebookBasics in Frameworks */ = {isa = PBXBuildFile; productRef = A04B48922EBCC9B30049803F /* FacebookBasics */; };
+		A04B48952EBCC9B30049803F /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; productRef = A04B48942EBCC9B30049803F /* FacebookCore */; };
+		A04B48972EBCC9B30049803F /* FacebookShare in Frameworks */ = {isa = PBXBuildFile; productRef = A04B48962EBCC9B30049803F /* FacebookShare */; };
+		A04B489A2EBCCA440049803F /* IOS_DiagnosticsSPM in Frameworks */ = {isa = PBXBuildFile; productRef = A04B48992EBCCA440049803F /* IOS_DiagnosticsSPM */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,14 +30,14 @@
 			path = FlyerDemo;
 			sourceTree = "<group>";
 		};
-		A04B41812EB8B7EA0049803F /* PackageLevel */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = PackageLevel;
-			sourceTree = "<group>";
-		};
 		A04B41822EB8B7F40049803F /* AppLevel */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = AppLevel;
+			sourceTree = "<group>";
+		};
+		A04B462D2EBC8D650049803F /* EditorVC */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = EditorVC;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -37,7 +47,17 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A04B45002EBB172D0049803F /* FMDB in Frameworks */,
+				A04B47BE2EBCA6A10049803F /* IOS_CommonUtilSPM in Frameworks */,
+				A04B47B52EBCA5C90049803F /* UnifiedPickerKit in Frameworks */,
+				A04B48342EBCB8200049803F /* Swinject in Frameworks */,
+				A04B47B22EBCA4800049803F /* Mantis in Frameworks */,
+				A04B47B82EBCA6030049803F /* IOS_LoaderSPM in Frameworks */,
+				A04B48932EBCC9B30049803F /* FacebookBasics in Frameworks */,
+				A04B489A2EBCCA440049803F /* IOS_DiagnosticsSPM in Frameworks */,
+				A04B462C2EBC8B500049803F /* IOS_CommonEditor in Frameworks */,
+				A04B48952EBCC9B30049803F /* FacebookCore in Frameworks */,
+				A04B48972EBCC9B30049803F /* FacebookShare in Frameworks */,
+				A04B47BB2EBCA6800049803F /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -47,8 +67,8 @@
 		A04B40DE2EB88D130049803F = {
 			isa = PBXGroup;
 			children = (
+				A04B462D2EBC8D650049803F /* EditorVC */,
 				A04B41822EB8B7F40049803F /* AppLevel */,
-				A04B41812EB8B7EA0049803F /* PackageLevel */,
 				A04B40E92EB88D130049803F /* FlyerDemo */,
 				A04B40E82EB88D130049803F /* Products */,
 			);
@@ -79,12 +99,22 @@
 			);
 			fileSystemSynchronizedGroups = (
 				A04B40E92EB88D130049803F /* FlyerDemo */,
-				A04B41812EB8B7EA0049803F /* PackageLevel */,
 				A04B41822EB8B7F40049803F /* AppLevel */,
+				A04B462D2EBC8D650049803F /* EditorVC */,
 			);
 			name = FlyerDemo;
 			packageProductDependencies = (
-				A04B44FF2EBB172D0049803F /* FMDB */,
+				A04B462B2EBC8B500049803F /* IOS_CommonEditor */,
+				A04B47B12EBCA4800049803F /* Mantis */,
+				A04B47B42EBCA5C90049803F /* UnifiedPickerKit */,
+				A04B47B72EBCA6030049803F /* IOS_LoaderSPM */,
+				A04B47BA2EBCA6800049803F /* SnapKit */,
+				A04B47BD2EBCA6A10049803F /* IOS_CommonUtilSPM */,
+				A04B48332EBCB8200049803F /* Swinject */,
+				A04B48922EBCC9B30049803F /* FacebookBasics */,
+				A04B48942EBCC9B30049803F /* FacebookCore */,
+				A04B48962EBCC9B30049803F /* FacebookShare */,
+				A04B48992EBCCA440049803F /* IOS_DiagnosticsSPM */,
 			);
 			productName = FlyerDemo;
 			productReference = A04B40E72EB88D130049803F /* FlyerDemo.app */;
@@ -115,7 +145,15 @@
 			mainGroup = A04B40DE2EB88D130049803F;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				A04B44FE2EBB172D0049803F /* XCRemoteSwiftPackageReference "fmdb" */,
+				A04B462A2EBC8B500049803F /* XCLocalSwiftPackageReference "../../IOS_CommonEditor" */,
+				A04B47B02EBCA4800049803F /* XCRemoteSwiftPackageReference "Mantis" */,
+				A04B47B32EBCA5C90049803F /* XCRemoteSwiftPackageReference "UnifiedPickerKit" */,
+				A04B47B62EBCA6030049803F /* XCRemoteSwiftPackageReference "IOS_LoaderSPM" */,
+				A04B47B92EBCA6800049803F /* XCRemoteSwiftPackageReference "SnapKit" */,
+				A04B47BC2EBCA6A10049803F /* XCRemoteSwiftPackageReference "IOS_CommonUtilSPM" */,
+				A04B48322EBCB8200049803F /* XCRemoteSwiftPackageReference "Swinject" */,
+				A04B48912EBCC9B30049803F /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */,
+				A04B48982EBCCA440049803F /* XCRemoteSwiftPackageReference "IOS_DiagnosticsSPM" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A04B40E82EB88D130049803F /* Products */;
@@ -295,10 +333,11 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				XROS_DEPLOYMENT_TARGET = 2.5;
 			};
 			name = Debug;
@@ -334,10 +373,11 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2,7";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				XROS_DEPLOYMENT_TARGET = 2.5;
 			};
 			name = Release;
@@ -365,22 +405,134 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		A04B462A2EBC8B500049803F /* XCLocalSwiftPackageReference "../../IOS_CommonEditor" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../IOS_CommonEditor;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
-		A04B44FE2EBB172D0049803F /* XCRemoteSwiftPackageReference "fmdb" */ = {
+		A04B47B02EBCA4800049803F /* XCRemoteSwiftPackageReference "Mantis" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/ccgus/fmdb";
+			repositoryURL = "https://github.com/guoyingtao/Mantis.git";
+			requirement = {
+				kind = exactVersion;
+				version = 2.18.0;
+			};
+		};
+		A04B47B32EBCA5C90049803F /* XCRemoteSwiftPackageReference "UnifiedPickerKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Mobisoft-Labs/UnifiedPickerKit.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 2.7.12;
+				minimumVersion = 1.0.0;
+			};
+		};
+		A04B47B62EBCA6030049803F /* XCRemoteSwiftPackageReference "IOS_LoaderSPM" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Mobisoft-Labs/IOS_LoaderSPM.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		A04B47B92EBCA6800049803F /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.7.1;
+			};
+		};
+		A04B47BC2EBCA6A10049803F /* XCRemoteSwiftPackageReference "IOS_CommonUtilSPM" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Mobisoft-Labs/IOS_CommonUtilSPM.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		A04B48322EBCB8200049803F /* XCRemoteSwiftPackageReference "Swinject" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Swinject/Swinject.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.10.0;
+			};
+		};
+		A04B48912EBCC9B30049803F /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/facebook/facebook-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 14.1.0;
+			};
+		};
+		A04B48982EBCCA440049803F /* XCRemoteSwiftPackageReference "IOS_DiagnosticsSPM" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Mobisoft-Labs/IOS_DiagnosticsSPM.git";
+			requirement = {
+				branch = main;
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		A04B44FF2EBB172D0049803F /* FMDB */ = {
+		A04B462B2EBC8B500049803F /* IOS_CommonEditor */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = A04B44FE2EBB172D0049803F /* XCRemoteSwiftPackageReference "fmdb" */;
-			productName = FMDB;
+			productName = IOS_CommonEditor;
+		};
+		A04B47B12EBCA4800049803F /* Mantis */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A04B47B02EBCA4800049803F /* XCRemoteSwiftPackageReference "Mantis" */;
+			productName = Mantis;
+		};
+		A04B47B42EBCA5C90049803F /* UnifiedPickerKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A04B47B32EBCA5C90049803F /* XCRemoteSwiftPackageReference "UnifiedPickerKit" */;
+			productName = UnifiedPickerKit;
+		};
+		A04B47B72EBCA6030049803F /* IOS_LoaderSPM */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A04B47B62EBCA6030049803F /* XCRemoteSwiftPackageReference "IOS_LoaderSPM" */;
+			productName = IOS_LoaderSPM;
+		};
+		A04B47BA2EBCA6800049803F /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A04B47B92EBCA6800049803F /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+		A04B47BD2EBCA6A10049803F /* IOS_CommonUtilSPM */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A04B47BC2EBCA6A10049803F /* XCRemoteSwiftPackageReference "IOS_CommonUtilSPM" */;
+			productName = IOS_CommonUtilSPM;
+		};
+		A04B48332EBCB8200049803F /* Swinject */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A04B48322EBCB8200049803F /* XCRemoteSwiftPackageReference "Swinject" */;
+			productName = Swinject;
+		};
+		A04B48922EBCC9B30049803F /* FacebookBasics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A04B48912EBCC9B30049803F /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookBasics;
+		};
+		A04B48942EBCC9B30049803F /* FacebookCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A04B48912EBCC9B30049803F /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookCore;
+		};
+		A04B48962EBCC9B30049803F /* FacebookShare */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A04B48912EBCC9B30049803F /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookShare;
+		};
+		A04B48992EBCCA440049803F /* IOS_DiagnosticsSPM */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A04B48982EBCCA440049803F /* XCRemoteSwiftPackageReference "IOS_DiagnosticsSPM" */;
+			productName = IOS_DiagnosticsSPM;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
