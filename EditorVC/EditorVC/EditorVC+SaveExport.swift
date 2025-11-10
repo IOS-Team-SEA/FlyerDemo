@@ -63,7 +63,7 @@ extension EditorVC {
         let isUserFree = !(UIStateManager.shared.isPremium || engine.templateHandler.currentTemplateInfo?.isPremium == 1)
         
         // Global instance to start cancel/restart saving offline
-        let renderer : OfflineSceneRenderer? = OfflineSceneRenderer(settings: engine.templateHandler.exportSettings, fileHandler: AppFileManager.shared, isUserSubscribed: !isUserFree, logger: AppPackageLogger(), resourceProvider: AppResourceProvider())
+        let renderer : OfflineSceneRenderer? = OfflineSceneRenderer(settings: engine.templateHandler.exportSettings, fileHandler: AppFileManager.shared, isUserSubscribed: !isUserFree, logger: AppPackageLogger(), resourceProvider: AppResourceProvider(), sceneConfig: AppSceneConfigure())
        
         self.loaderState.$didCancelTapped.dropFirst().sink { value in
             if value == true {

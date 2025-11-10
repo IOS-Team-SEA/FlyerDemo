@@ -708,7 +708,7 @@ struct PasteDrop: View {
 
 class LoaderState: ObservableObject {
     @Published var progress: CGFloat = 0.0
-    @Published var image: UIImage = UIImage(named : "none")!
+    @Published var image: UIImage = UIImage(systemName: "plus")!
     @Published var didCancelTapped: Bool = false
     
     func reset() {

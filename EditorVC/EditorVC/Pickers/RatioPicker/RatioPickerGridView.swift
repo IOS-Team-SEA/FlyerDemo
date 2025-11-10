@@ -55,12 +55,12 @@ struct RatioPickerGridView: View {
     }
 }
 
-struct RatioPickerGridView_Previews: PreviewProvider {
-    static var previews: some View {
-        let actionState = ActionStates()
-        RatioPickerGridView(currentActionState: actionState, createNewTapped: true)
-    }
-}
+//struct RatioPickerGridView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        let actionState = ActionStates()
+//        RatioPickerGridView(currentActionState: actionState, createNewTapped: true)
+//    }
+//}
 
 
 struct RatioCategoryView: View {

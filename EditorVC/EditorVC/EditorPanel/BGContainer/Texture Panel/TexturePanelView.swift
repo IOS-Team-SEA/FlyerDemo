@@ -297,7 +297,7 @@ struct BGTextureCell: View {
                     
                 }
             }else{
-//                ShimmerEffectBox().frame(width: 65, height: 65).cornerRadius(10.0, antialiased: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
+                ShimmerEffectBox().frame(width: 65, height: 65).cornerRadius(10.0, antialiased: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
             }
             
         }

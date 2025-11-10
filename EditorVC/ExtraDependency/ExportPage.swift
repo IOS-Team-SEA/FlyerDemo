@@ -289,7 +289,7 @@ struct ExportPage: View {
             if let image = UIImage(data: data) {
                 DispatchQueue.main.async {
                     self.thumbnailImage = image
-                    ShareDirect.photoAlbumManager.saveToPhotoLibrary(thumbnailImage!, isJpeg: self.isJpeg)
+//                    ShareDirect.photoAlbumManager.saveToPhotoLibrary(thumbnailImage!, isJpeg: self.isJpeg)
 
 
                 }

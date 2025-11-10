@@ -6,45 +6,12 @@
 //
 import Swinject
 import IOS_CommonEditor
-//import IOS_LoginAuthSPM
-
-//final class Injection{
-//    
-//    static var shared = Injection()
-//    
-//    var container: Container{
-//        get{
-//            if _container == nil{
-//                _container = buildContainer()
-//            }
-//            return _container!
-//        }
-//        
-//        set{
-//            _container = newValue
-//        }
-//    }
-//    
-//    private var _container: Container?
-//    
-//    private func buildContainer() -> Container{
-//        let container = Container()
-//        
-//        container.register(AnalyticsLogger.self) { _ in
-//            AnalyticsLogger(firebaseLogger: FirebaseAnalyticsManager(), inHouseLogger: InHouseLoggerManager())
-//        }
-//        
-//        
-//        return container
-//    }
-//}
-
-
 
 final class Injection {
     static var shared = Injection()
 
     private var _appLevelContainer: Container?
+    private var _appLevelResolver: Resolver?
     private var _homeScreenContainer: Container?
 //    private var _editorContainer: Container?
 
@@ -57,20 +24,15 @@ final class Injection {
         }
         return _appLevelContainer!
     }
-
-//    var homeScreenContainer: Container {
-//        if _homeScreenContainer == nil {
-//            _homeScreenContainer = buildHomeScreenContainer()
-//        }
-//        return _homeScreenContainer!
-//    }
-
-//    var editorContainer: Container {
-//        if _editorContainer == nil {
-//            _editorContainer = buildEditorContainer()
-//        }
-//        return _editorContainer!
-//    }
+    
+    var appLevelResolver: Resolver {
+        if let resolver = _appLevelResolver {
+            return resolver
+        }
+        let resolver = appLevelContainer.synchronize()
+        _appLevelResolver = resolver
+        return resolver
+    }
 
     private init() {}
 
@@ -85,38 +47,7 @@ final class Injection {
                 }
            
         }.inObjectScope(.transient)
-        
-//        container.register(ThumbnailDataSource.self) { resolver in
-//
-//            MainActor.assumeIsolated {
-//                return ThumbnailDataSource()
-//                }
-//           
-//        }.inObjectScope(.container)
-        
-//        container.register(DBMigrationOldToNewV3.self) { resolver in
-//
-//            MainActor.assumeIsolated {
-//                return DBMigrationOldToNewV3()
-//                }
-//           
-//        }.inObjectScope(.container)
-        
-        
-//        container.register(TemplateRepository.self) { resolver in
-//
-//            MainActor.assumeIsolated {
-//                return TemplateRepository()
-//                }
-//           
-//        }.inObjectScope(.container)
-//        
-//        // Remote Config
-//        container.register(RemoteConfigManager.self) { _ in
-//            return RemoteConfigManager()
-//        }
-        
-        
+
         container.register(ApiService.self) { _ in ApiService() }
             .inObjectScope(.transient)
 //        container.register(RSVPAPIStrore.self) { _ in RSVPAPIStrore() }
@@ -127,17 +58,6 @@ final class Injection {
         }
         .inObjectScope(.transient)
         
-//        container.register(AnalyticsLogger.self) { _ in
-//            AnalyticsLogger(firebaseLogger: FirebaseAnalyticsManager(), inHouseLogger: InHouseLoggerManager())
-//        }.inObjectScope(.container)
-//        
-//        container.register(TrendingVM.self) { resolver in
-//
-//            MainActor.assumeIsolated {
-//                return TrendingVM()
-//                }
-           
-//        }.inObjectScope(.transient)
         container.register(IAPViewModel.self) { resolver in
 
             MainActor.assumeIsolated {
@@ -146,217 +66,22 @@ final class Injection {
            
         }.inObjectScope(.container)
 
-//        container.register(PremiumPurchaseProviding.self) { _ in
-//            MainActor.assumeIsolated {
-//                return StoreKitPurchaseProvider(plans: PremiumPlanCatalog.entitlementPlans)
-//            }
-//        }.inObjectScope(.container)
-//
-//        container.register(PremiumAnalyticsTracking.self) { resolver in
-//            MainActor.assumeIsolated {
-//                let analytics = resolver.resolve(AnalyticsLogger.self)!
-//                return PremiumAnalyticsBridge(analytics: analytics)
-//            }
-//        }.inObjectScope(.container)
-//
-//        container.register(PremiumExperimentProviding.self) { resolver in
-//            MainActor.assumeIsolated {
-//                let remoteConfig = resolver.resolve(RemoteConfigManager.self)!
-//                return PremiumRemoteExperimentProvider(remoteConfigManager: remoteConfig)
-//            }
-//        }.inObjectScope(.container)
 
-//        container.register(PremiumEligibilityProviding.self) { _ in
-//            MainActor.assumeIsolated {
-//                return DefaultPremiumEligibilityProvider()
-//            }
-//        }.inObjectScope(.container)
-//
-//        container.register(PremiumEntitlementStore.self) { _ in
-//            MainActor.assumeIsolated {
-//                return DefaultPremiumEntitlementStore(key: "premium.entitlement")
-//            }
-//        }.inObjectScope(.container)
-
-//        container.register(PremiumEngine.self) { resolver in
-//            MainActor.assumeIsolated {
-//                let purchaseProvider = resolver.resolve(PremiumPurchaseProviding.self)!
-//                let analytics = resolver.resolve(PremiumAnalyticsTracking.self)!
-//                let experiments = resolver.resolve(PremiumExperimentProviding.self)!
-//                let eligibility = resolver.resolve(PremiumEligibilityProviding.self)!
-//                let entitlementStore = resolver.resolve(PremiumEntitlementStore.self)!
-//
-//                let dependencies = PremiumEngine.Dependencies(purchaseProvider: purchaseProvider,
-//                                                              analytics: analytics,
-//                                                              eligibility: eligibility,
-//                                                              entitlementStore: entitlementStore)
-//                let engine = PremiumEngine(plans: PremiumPlanCatalog.entitlementPlans,
-//                                           dependencies: dependencies)
-//                return engine
-//            }
-//        }.inObjectScope(.container)
-//
-//        container.register(PremiumViewModel.self) { resolver in
-//            MainActor.assumeIsolated {
-//                let engine = resolver.resolve(PremiumEngine.self)!
-//                let experiments = resolver.resolve(PremiumExperimentProviding.self)!
-//                let remoteConfig = resolver.resolve(RemoteConfigManager.self)!
-//                let configuration = PremiumConfigurationFactory.makeDefaultConfiguration(remoteConfig: remoteConfig)
-//                return PremiumViewModel(engine: engine,
-//                                        configuration: configuration,
-//                                        experiments: experiments)
-//            }
-//        }.inObjectScope(.transient)
-
-//        container.register(PremiumAccess.self) { resolver in
-//            MainActor.assumeIsolated {
-//                let engine = resolver.resolve(PremiumEngine.self)!
-//                let access = PremiumAccess(engine: engine)
-//                access.attach(to: UIStateManager.shared)
-//                return access
-//            }
-//        }.inObjectScope(.container)
-//        
-//        container.register(FilterResponseVM.self) { resolver in
-//
-//            MainActor.assumeIsolated {
-//                    return FilterResponseVM()
-//                }
-//           
-//        }.inObjectScope(.transient)
-//        
-//        container.register(SearchableVM.self) { resolver in
-//
-//            MainActor.assumeIsolated {
-//                    return SearchableVM()
-//                }
-//           
-//        }.inObjectScope(.transient)
-//        
-//        container.register(UserDesignVM.self) { resolver in
-//
-//            MainActor.assumeIsolated {
-//                    return UserDesignVM()
-//                }
-//           
-//        }.inObjectScope(.transient)
-        
-//        container.register(ArticlesVM.self) { resolver in
-//
-//            MainActor.assumeIsolated {
-//                    return ArticlesVM()
-//                }
-//           
-//        }.inObjectScope(.transient)
-        
-       
-        
-//        container.register(SearchableVM.self) { resolver in
-//
-//            MainActor.assumeIsolated {
-//                    return SearchableVM()
-//                }
-//           
-//        }.inObjectScope(.transient)
-//        
-//        
-//        container.register(AllCategoriesVM.self) { (resolver) in
-//            MainActor.assumeIsolated {
-//                return  AllCategoriesVM()
-//            }
-//        }.inObjectScope(.transient)
-//        container.register(ServerCategoryVM.self) { (r,category: [String:String]) in
-//            MainActor.assumeIsolated {
-//                return  ServerCategoryVM(filter: category)
-//            }
-//        }.inObjectScope(.transient)
-//        
-//       
-//        
-//        container.register(HomeVM.self) { (resolver) in
-//            MainActor.assumeIsolated {
-//                return  HomeVM()
-//            }
-//        }.inObjectScope(.transient)
-//        
-//        container.register(LoaderViewModel.self) { (resolver) in
-//            MainActor.assumeIsolated {
-//                return  LoaderViewModel()
-//            }
-//        }.inObjectScope(.transient)
-        
-//        container.register(DetailResultViewModel.self) { (resolver, argument: [String: String]?) in
-//            MainActor.assumeIsolated {
-//                return  DetailResultViewModel(initialCategory: argument)
-//            }
-//        }.inObjectScope(.transient)
-           
-    //    $0.register(URLGenerator.self) { _ in URLGenerator() }
-        
         container.register(Repository.self) { r in
             Repository()
         }
         .inObjectScope(.container)
             
-//        container.register(EditorViewManager.self) { (r) in
-//            EditorViewManager()
-//        }
-//        
-//        container.register(LoginViewModel.self) { r in
-//            MainActor.assumeIsolated {
-//                LoginViewModel()
-//            }
-//        }.inObjectScope(.transient)
-        
-//        container.register(UserProfileVM.self) { _ in
-//            MainActor.assumeIsolated {
-//                return UserProfileVM()
-//            }
-//        }
-//        .inObjectScope(.container)
-//        
-//        container.register(RSVPAPIStrore.self) { _ in RSVPAPIStrore() }
-//            .inObjectScope(.container)
-        
+
         container.register(RSVPNetworkManager.self) { _ in RSVPNetworkManager() }
             .inObjectScope(.container)
-//            .initCompleted { r, s in
-//                s.userProfileVM = r.resolve(UserProfileVM.self)!
-//            }
-        
+
         container.register(RSVPRepository.self) { _ in RSVPRepository() }
             .inObjectScope(.container)
         
-//        container.register(AuthManager.self) { _ in AuthManager() }
-//            .inObjectScope(.container)
-//        
-//        container.register(MetalViewHandler.self) { _ in
+        container.register(IOS_CommonEditor.ShaderLibrary.self) { _ in
 //            MainActor.assumeIsolated {
-//                MetalViewHandler()
-//            }
-//        }
-//        .inObjectScope(.transient)
-        
-        
-        
-//        container.register(MetalEngine.self) { _ in
-//                MetalEngine()
-//        }
-//        .inObjectScope(.transient)
-        
-     
-        
-//        container.register(EditorLauncherViewModel.self) { _ in
-//            MainActor.assumeIsolated {
-//                EditorLauncherViewModel()
-//            }
-//        }.inObjectScope(.container)
-        
-        // METAL SHADERS
-        
-        container.register(ShaderLibrary.self) { _ in
-//            MainActor.assumeIsolated {
-                ShaderLibrary()
+            IOS_CommonEditor.ShaderLibrary()
 //            }
         }.inObjectScope(.container)
         
@@ -364,7 +89,7 @@ final class Injection {
             PipelineLibrary()
             
         }.inObjectScope(.container)
-        
+                
         container.register(MVertexDescriptorLibrary.self) { _ in
                 MVertexDescriptorLibrary()
             
@@ -372,7 +97,7 @@ final class Injection {
         
         
        
-        
+        _appLevelResolver = container.synchronize()
         return container
     }
 
@@ -382,7 +107,7 @@ final class Injection {
 extension Injection {
     
     func inject<T: AnyObject>(type:T.Type) -> T? {
-       return  appLevelContainer.resolve(type)
+       return  appLevelResolver.resolve(type)
     }
     // Generic method to resolve ViewModel dynamically based on type, ID, and ContainerType
     func inject<T: AnyObject>(id: String, type: T.Type , argument: Any? = nil ) -> T? {
@@ -396,22 +121,22 @@ extension Injection {
            
             
             
-             if let argument1 = argument as? Int, let viewModel = appLevelContainer.resolve(T.self, argument: argument1 ) {
+             if let argument1 = argument as? Int, let viewModel = appLevelResolver.resolve(T.self, argument: argument1 ) {
                  viewModels[id] = Weak(value: viewModel)
                  return viewModel
 
              }
-           else if let argument1 = argument, let viewModel = appLevelContainer.resolve(T.self, argument: argument1 ) {
+           else if let argument1 = argument, let viewModel = appLevelResolver.resolve(T.self, argument: argument1 ) {
                 viewModels[id] = Weak(value: viewModel)
                 return viewModel
 
             }
-            else if let viewModel = appLevelContainer.resolve(T.self) {
+            else if let viewModel = appLevelResolver.resolve(T.self) {
                 // Cache the newly resolved ViewModel using weak reference
                 viewModels[id] = Weak(value: viewModel)
                 return viewModel
             }
-            else if let argument1 = argument as? [String: String]? , let viewModel = appLevelContainer.resolve(T.self, argument: argument1 ) {
+            else if let argument1 = argument as? [String: String]? , let viewModel = appLevelResolver.resolve(T.self, argument: argument1 ) {
                 viewModels[id] = Weak(value: viewModel)
                 return viewModel
 
@@ -428,7 +153,7 @@ extension Injection {
         } else {
             // Resolve a new instance from the container with the argument (id)
            
-             if let viewModel = appLevelContainer.resolve(T.self, argument: dictArgument ) {
+             if let viewModel = appLevelResolver.resolve(T.self, argument: dictArgument ) {
                 viewModels[id] = Weak(value: viewModel)
                 return viewModel
 
@@ -492,7 +217,7 @@ struct Injected<Dependency: AnyObject> {  // Ensure Dependency is a class
             }
             self.wrappedValue = resolved
         } else {
-            guard let resolved = Injection.shared.appLevelContainer.resolve(Dependency.self) else {
+            guard let resolved = Injection.shared.appLevelResolver.resolve(Dependency.self) else {
                 fatalError("Dependency \(Dependency.self) not found")
             }
             self.wrappedValue = resolved
@@ -562,3 +287,21 @@ struct Injected<Dependency: AnyObject> {  // Ensure Dependency is a class
 //    
 //    }
    
+
+extension Injection: DependencyResolverProtocol {
+    func resolve<T>(_ type: T.Type) -> T? {
+        appLevelResolver.resolve(type)
+    }
+
+    func resolve<T, Arg>(_ type: T.Type, argument: Arg) -> T? {
+        appLevelResolver.resolve(type, argument: argument)
+    }
+
+    func resolve<T>(id: String, type: T.Type, argument: Any?) -> T? {
+        viewModels[id] as? T
+    }
+
+    func register<T>(_ instance: T, for type: T.Type) {
+        viewModels[String(describing: type)] = instance
+    }
+}

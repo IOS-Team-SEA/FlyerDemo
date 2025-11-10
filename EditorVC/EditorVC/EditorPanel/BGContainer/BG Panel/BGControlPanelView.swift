@@ -275,7 +275,7 @@ struct BGWallpaperCell: View {
                     
                 }
             }else{
-//                ShimmerEffectBox().frame(width: 90, height: 90).cornerRadius(10.0, antialiased: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
+                ShimmerEffectBox().frame(width: 90, height: 90).cornerRadius(10.0, antialiased: /*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
             }
         }
         
@@ -537,5 +537,47 @@ class DataSourceStore: ObservableObject {
         overlays.removeAll()
         fonts.removeAll()
 //        printLog("Cleaned up wallpapers, texture, overlays and fonts.")
+    }
+}
+
+struct ShimmerEffectBox: View {
+    private var gradientColors = [
+        Color(uiColor: UIColor.systemGray5),
+        Color(uiColor: UIColor.systemGray6),
+        Color(uiColor: UIColor.systemGray5)
+    ]
+    
+    @State private var startPoint: UnitPoint = .init(x: -1.8, y: -1.2)
+    @State private var endPoint: UnitPoint = .init(x: 0, y: -0.2)
+    @State private var isAnimating = false // Track animation state
+    
+    var body: some View {
+        LinearGradient(colors: gradientColors,
+                       startPoint: startPoint,
+                       endPoint: endPoint)
+            .onAppear {
+                startAnimation() // Trigger animation on appear
+            }
+            .onDisappear {
+                stopAnimation() // Stop the animation on disappear
+            }
+    }
+    
+    private func startAnimation() {
+        // Ensure we only start the animation once
+        if !isAnimating {
+            isAnimating = true
+            withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: false)) {
+                startPoint = .init(x: 1, y: 1)
+                endPoint = .init(x: 2.2, y: 2.2)
+            }
+        }
+    }
+    
+    private func stopAnimation() {
+        // Reset animation state to stop memory consumption
+        isAnimating = false
+        startPoint = .init(x: -1.8, y: -1.2)
+        endPoint = .init(x: 0, y: -0.2)
     }
 }

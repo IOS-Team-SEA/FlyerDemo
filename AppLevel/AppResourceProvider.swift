@@ -9,6 +9,7 @@ import Foundation
 import UIKit
 import IOS_CommonEditor
 import SwiftUICore
+import IOS_CommonUtilSPM
 
 final class AppResourceProvider: TextureResourceProvider {
     func getDefaultImage() -> UIImage? {
@@ -16,7 +17,7 @@ final class AppResourceProvider: TextureResourceProvider {
     }
     
     func loadImageUsingQL(fileURL: URL, maxSize: CGSize) async -> CGImage? {
-        await loadImageUsingQL(fileURL: fileURL, maxSize: maxSize)
+        await FlyerDemo.loadImageUsingQL(fileURL: fileURL, maxSize: maxSize)
     }
     
     func readDataFromFileQLFromDocument(fileName: String, maxSize: CGSize) async -> CGImage? {
@@ -111,11 +112,11 @@ final class AppDBLogger: DBLogger{
     }
     
     func getDBPath() -> URL? {
-        return URL(string: "")
+        return AppFileManager.shared.dataBase?.url
     }
     
     func getDBName() -> String {
-        return ""
+        return "DESIGN_DB.db"
     }
     
     func getBaseSize() -> CGSize {
@@ -150,12 +151,13 @@ final class AppDBLogger: DBLogger{
 }
 
 final class AppEngineConfigure: EngineConfiguration {
-    var progress: Float = UIStateManager.shared.progress
+    var progress: Float {
+        get { UIStateManager.shared.progress }
+        set { UIStateManager.shared.progress = newValue }
+    }
     
     var isPremium: Bool = UIStateManager.shared.isPremium
-    
-    var BASE_SIZE: CGSize = FlyerDemo.BASE_SIZE
-    
+        
     var contentScaleFactor: CGFloat = UIStateManager.shared.contentscaleFactor
     
     var getSnappingMode: Int = PersistentStorage.snappingMode
@@ -220,6 +222,10 @@ final class AppEngineConfigure: EngineConfiguration {
         AppFileManager.shared.localMusic?.url
     }
     
+    func getBaseSize() -> CGSize{
+        return BASE_SIZE
+    }
+    
     func logReplaceSticker() {
 //        analyticsLogger.logEditorInteraction(action: .replaceSticker)
     }
@@ -265,7 +271,11 @@ final class AppLayersConfigure: LayersConfiguration{
     var accentColorUIKit: UIColor = AppStyle.accentColorUIKit
     
     func removeOrDismissViewController(_ childViewController: UIViewController) {
-        self.removeOrDismissViewController(childViewController)
+        guard let topVC = UIApplication.shared.keyWindowPresentedController else {
+            print("⚠️ No top view controller found.")
+            return
+        }
+        topVC.removeOrDismissViewController(childViewController)
     }
     
     
@@ -347,9 +357,6 @@ final class AppTimelineConfigure: TimelineConfiguration{
 //    func resolve<T>(id: String, type: T.Type, argument: Any?) -> T? {
 //        return container[id] as? T
 //    }
-//    
-//    
-//    
 //}
 
 /*

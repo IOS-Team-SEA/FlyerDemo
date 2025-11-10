@@ -32,7 +32,7 @@ extension EditorVC {
             
             self.loadingStaus = true
         }
-//        addPlayerControlView()
+        addPlayerControlView()
         Task {
             let didLoadScene = await engine!.prepareScene2(templateID: self.currentTemplateID, refSize: BASE_SIZE, loadThumbnails: loadingState == .Edit ? true : false)
             if didLoadScene {
@@ -95,7 +95,7 @@ extension EditorVC {
                         engine.viewManager?.editView?.gestureView.isAllGesturesEnabled = true
                     }
                     engine.viewManager?.setTemplateHandler(templateHandler: engine.templateHandler)
-             
+                    engine.viewManager?.setZoomController()
                     engine.sceneManager.setTemplateHandler(templateHandler: engine.templateHandler)
                     engine.undoRedoManager?.setTemplateHandler(templateHandler: engine.templateHandler)
                     if engine.viewManager?.rootView?.currentPage == nil {

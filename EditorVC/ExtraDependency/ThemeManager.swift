@@ -36,7 +36,7 @@ struct ColorArrayDict: Codable, Hashable{
 
 class ThemeManager: ObservableObject {
     
-    @Published var accentColor : UIColor = UIColor(named: "AccentColor")!
+    @Published var accentColor : UIColor = .systemPink//UIColor(named: "AccentColor")!
     static let shared = ThemeManager()
     
     private init() {
