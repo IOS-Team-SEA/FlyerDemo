@@ -8,8 +8,9 @@
 import Foundation
 import Combine
 import IOS_CommonEditor
+import UIKit
 
-class EditorVM{
+class EditorVM: ObservableObject{
     
     deinit{
         printLog("de-init \(self)")
@@ -33,15 +34,22 @@ class EditorVM{
 //    
     //MARK: - Variables
     var metalEngine : MetalEngine?
-    
-    
-    
+    var thumbImage: UIImage
+    var templateId: Int
     @MainActor var dsStore = DataSourceStore()
 
+//    @Published public var didPreviewTapped: Bool = false
+//    @Published public var didWatchAdsTapped: Bool = false
+    @Published public var didGetPremiumTapped: Bool = false
+//    @Published public var didLayersTapped: Bool = false
+//    @Published public var didMusicPlayOnEditor: Bool = false
+    @Published public var showThumbnailNavItems: Bool = false
     
 //    @Published var editorUIState : EditorUIStates = .UseMe
     
-    init() {
+    init(templateId: Int, thumbImage: UIImage) {
+        self.templateId = templateId
+        self.thumbImage = thumbImage
         printLog("init \(self)")
         metalEngine = MetalEngine(logger: AppPackageLogger(), resourceProvider: AppResourceProvider(), engineConfig: AppEngineConfigure(), sceneConfig: AppSceneConfigure(), layerConfig: AppLayersConfigure(), vmConfig: AppViewManagerConfigure())
      

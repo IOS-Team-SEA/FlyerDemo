@@ -9,15 +9,26 @@ import SwiftUI
 import IOS_CommonEditor
 import IOS_DiagnosticsSPM
 
-class AppDelegate: NSObject, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate {
     
 //    @Injected var shaderLibrary : IOS_CommonEditor.ShaderLibrary
 //    @Injected var pipelineLibrary : PipelineLibrary
 //    @Injected var  mVertexDescriptorLibrary : MVertexDescriptorLibrary
-    
     var shaderLibrary: IOS_CommonEditor.ShaderLibrary!
         var pipelineLibrary: PipelineLibrary!
         var mVertexDescriptorLibrary: MVertexDescriptorLibrary!
+    
+    // Must return true if using SceneDelegate
+        func application(
+            _ application: UIApplication,
+            configurationForConnecting connectingSceneSession: UISceneSession,
+            options: UIScene.ConnectionOptions
+        ) -> UISceneConfiguration {
+            print("✅ configurationForConnecting called")
+            let config = UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
+            config.delegateClass = SceneDelegate.self
+            return config
+        }
     
     func application(
         _ application: UIApplication,
@@ -76,18 +87,32 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
 
 
-@main
-struct FlyerDemoApp: App {
-    
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
-    }
-}
+//@main
+//struct FlyerDemoApp: App {
+//    
+//    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+//    
+//    var body: some Scene {
+//        WindowGroup {
+////            ContentView()
+//            //            RootViewControllerWrapper()
+//        }
+//    }
+//}
 
+//struct RootViewControllerWrapper: UIViewControllerRepresentable {
+//    func makeUIViewController(context: Context) -> UINavigationController {
+//        let contentVC = UIHostingController(rootView: ContentView())
+//        contentVC.title = "Home"
+//
+//        let nav = UINavigationController(rootViewController: contentVC)
+//        nav.navigationBar.isHidden = false
+//        nav.navigationBar.prefersLargeTitles = false
+//        return nav
+//    }
+//
+//    func updateUIViewController(_ uiViewController: UINavigationController, context: Context) {}
+//}
 
 class DatabaseManager: NSObject {
     

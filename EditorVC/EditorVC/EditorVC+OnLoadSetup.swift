@@ -56,9 +56,10 @@ extension EditorVC {
             guard let engine = engine else { return }
             guard let editorView = editorView else { return }
             
-
+            setupControlPanelManager()
             createContainerView()
-            addSwiftUIOpacityView()
+            controlPanelManager?.addSwiftUIOpacityView()
+            
             
                 if let customloaderView = self.customLoader?.view{
                     customloaderView.removeFromSuperview()
@@ -296,6 +297,8 @@ extension EditorVC {
                     print("DD_STARTED RENDERING", didLoadScene)
                     engine?.viewManager?.editView?.gestureView.isAllGesturesEnabled = true
                     self.observeCurrentActions()
+                    self.observeEditorAction()
+                    self.controlPanelManager?.observeControlManager()
                     onSceneLoad()
                     
                 }
@@ -318,6 +321,8 @@ extension EditorVC {
                 if didLoadScene {
                     print("DD_STARTED RENDERING", didLoadScene)
                     self.observeCurrentActions()
+                    self.observeEditorAction()
+                    self.controlPanelManager?.observeControlManager()
                     onSceneLoad()
                     
                 }
@@ -352,6 +357,8 @@ extension EditorVC {
                
                 engine.editorUIState = .Preview
                 self.observeCurrentActions()
+                self.observeEditorAction()
+                self.controlPanelManager?.observeControlManager()
                 onSceneLoad()
                 
             }
@@ -433,7 +440,7 @@ extension EditorVC {
 //   }
     
     func loadEditorView(frame:CGRect,center:CGPoint) {
-        if let metalEngine = viewModel.metalEngine{
+        if let metalEngine = viewModel?.metalEngine{
             
             
             if editorView == nil{

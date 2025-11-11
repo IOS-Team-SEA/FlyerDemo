@@ -25,13 +25,13 @@ extension EditorVC {
          
          
          
-         templateHandler.$setSelectedModelChanged.dropFirst().sink(receiveValue: { [weak self] _ in
-             guard let self = self else { return }
-             
-             
-             self.updateViewsNModelState()
-             
-         }).store(in: &actionStateCancellables)
+//         templateHandler.$setSelectedModelChanged.dropFirst().sink(receiveValue: { [weak self] _ in
+//             guard let self = self else { return }
+//             
+//             
+//             self.updateViewsNModelState()
+//             
+//         }).store(in: &actionStateCancellables)
          
   
          
@@ -52,50 +52,50 @@ extension EditorVC {
                 self?.showOverlay()
             }).store(in: &actionStateCancellables)
             
-            templateHandler.$selectedComponenet.sink { [weak self] component in
-                // conflict added neeshu
-                if component == .base{
-                    
-                    let thumbImage = engine.templateHandler.currentPageModel?.thumbImage
-                    self?.thumbnailImage = thumbImage
-                    
-                    // Use @StateObject to create a state wrapper around the image
-                    let thumbnailImageState = State(initialValue: thumbImage)
-                    
-                    self?.hostingerController?.rootView =  AnyView(
-                        BaseContainer(
-                            baseContentType: engine.editorUIState,
-                            thumbImage: Binding(
-                                get: {
-                                    
-                                    engine.templateHandler.currentPageModel?.thumbImage
-//                                    thumbnailImageState.wrappedValue
-                                },
-                                set: { [weak self] newValue in
-                                    guard let self = self else { return }
-                                    
-//                                    thumbnailImageState.wrappedValue = newValue
-                                    engine.templateHandler.currentPageModel?.thumbImage = newValue
-                                }
-                            ),
-                            actionStates: engine.templateHandler.currentActionState,
-                            exportSettings: engine.templateHandler.exportSettings,
-                            delegate: self // Ensure delegate is weak in BaseContainer
-                        ).environment(\.sizeCategory, .medium)
-                    )
-                }else {
-                    templateHandler.currentActionState.exportPageTapped = false
-                }
-//                else if component == .sticker{
-//                    hostingerController?.rootView = AnyView(StickerContainer(currentModel: engine.templateHandler.currentStickerModel!, currentActionModel: engine.templateHandler.currentActionState, delegate: self))
-//                }else if component == .page{
-//                    hostingerController?.rootView = AnyView(PageContainer(currentModel: engine.templateHandler.currentPageModel!, actionStates: engine.templateHandler.currentActionState, delegate: self, ratioSize: BASE_SIZE))
-//                }else if component == .text{
-//                    hostingerController?.rootView = AnyView(TextContainer(currentModel: engine.templateHandler.currentTextModel!, currentActionModel: engine.templateHandler.currentActionState, delegate: self))
-//                }else if component == .parent{
-//                    hostingerController?.rootView = AnyView(ParentContainer(currentModel: engine.templateHandler.currentParentModel!,actionStates: engine.templateHandler.currentActionState, ratioSize: BASE_SIZE))
+//            templateHandler.$selectedComponenet.sink { [weak self] component in
+//                // conflict added neeshu
+//                if component == .base{
+//                    
+//                    let thumbImage = engine.templateHandler.currentPageModel?.thumbImage
+//                    self?.thumbnailImage = thumbImage
+//                    
+//                    // Use @StateObject to create a state wrapper around the image
+//                    let thumbnailImageState = State(initialValue: thumbImage)
+//                    
+//                    self?.hostingerController?.rootView =  AnyView(
+//                        BaseContainer(
+//                            baseContentType: engine.editorUIState,
+//                            thumbImage: Binding(
+//                                get: {
+//                                    
+//                                    engine.templateHandler.currentPageModel?.thumbImage
+////                                    thumbnailImageState.wrappedValue
+//                                },
+//                                set: { [weak self] newValue in
+//                                    guard let self = self else { return }
+//                                    
+////                                    thumbnailImageState.wrappedValue = newValue
+//                                    engine.templateHandler.currentPageModel?.thumbImage = newValue
+//                                }
+//                            ),
+//                            actionStates: engine.templateHandler.currentActionState,
+//                            exportSettings: engine.templateHandler.exportSettings,
+//                            delegate: self // Ensure delegate is weak in BaseContainer
+//                        ).environment(\.sizeCategory, .medium)
+//                    )
+//                }else {
+//                    templateHandler.currentActionState.exportPageTapped = false
 //                }
-            }.store(in: &actionStateCancellables)
+////                else if component == .sticker{
+////                    hostingerController?.rootView = AnyView(StickerContainer(currentModel: engine.templateHandler.currentStickerModel!, currentActionModel: engine.templateHandler.currentActionState, delegate: self))
+////                }else if component == .page{
+////                    hostingerController?.rootView = AnyView(PageContainer(currentModel: engine.templateHandler.currentPageModel!, actionStates: engine.templateHandler.currentActionState, delegate: self, ratioSize: BASE_SIZE))
+////                }else if component == .text{
+////                    hostingerController?.rootView = AnyView(TextContainer(currentModel: engine.templateHandler.currentTextModel!, currentActionModel: engine.templateHandler.currentActionState, delegate: self))
+////                }else if component == .parent{
+////                    hostingerController?.rootView = AnyView(ParentContainer(currentModel: engine.templateHandler.currentParentModel!,actionStates: engine.templateHandler.currentActionState, ratioSize: BASE_SIZE))
+////                }
+//            }.store(in: &actionStateCancellables)
             
             
             
@@ -104,152 +104,7 @@ extension EditorVC {
 //            }.store(in: &cancellables)
 //            
             
-            templateHandler.currentActionState.$didWatchAdsTapped.dropFirst().sink { [weak self] value in
-                guard let self = self else { return }
-                
-                if value == true{
-//                    AdsEngine.shared.showAdsIfNeeded{ [weak self] result in
-//                        guard let self = self else { return }
-//                        
-//                        let tryPremium = UIAlertAction(title: NSLocalizedString("Dismiss_", comment: "Button to dismiss the alert"), style: .default) { _ in
-//                            print("Try Again")
-//                        }
-//                        
-//                        let goPremium = UIAlertAction(title: NSLocalizedString("Go_Premium", comment: "Button to upgrade to premium"), style: .cancel) { _ in
-//                            templateHandler.currentActionState.didGetPremiumTapped = true
-//                        }
-//                        
-//                        if result == .failure {
-//                            self.showAlert(NSLocalizedString("Ads_Failed_Title", comment: "Title shown when ads fail to load"), message:  NSLocalizedString("Ads_Failed_Message", comment: "Message explaining that ads failed to load"), alertActions: [tryPremium ,goPremium])
-//                        }
-//                        else if result == .success{
-                                                        self.onSave()
-//                            self.onSaveAndContinue()
-//                        }
-//                    }
-                    
-                }
-            }.store(in: &actionStateCancellables) // conflict with neeshu
             
-            templateHandler.currentActionState.$didUseMeTapped.dropFirst().sink{ [weak  self] value in
-                guard let self = self else { return }
-                
-                addShimmerEffect()
-                if value != engine.templateHandler.currentActionState.didUseMeTapped{
-                    if  engine.templateHandler.playerControls?.renderState == .Playing{
-                        engine.templateHandler.playerControls?.renderState = .Completed
-                    }
-                    relayoutViewForEdit2()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
-                        guard let self = self else { return }
-//                        engine.showDrop = autoSaveDesignDrop
-                        Drops.show(autoSaveDesignDrop)
-                    }
-                   
-                }
-            }.store(in: &actionStateCancellables)
-            
-            //Neeshu do this work for the Premium Page.
-            templateHandler.currentActionState.$didPurchasedTapped.dropFirst().sink{[weak  self] value in
-                guard let self = self else { return }
-                
-                if  engine.templateHandler.playerControls?.renderState == .Playing{
-                    engine.templateHandler.playerControls?.renderState = .Completed
-                }
-              /*  let iapViewModel = IAPViewModel(isSingleTemplateSelectedOrNot: true, consumableImage: Image(uiImage: thumbImage), defaultProductType: .onetime, premiumPageLoadingState: .normal)*/
-                
-                // Create the SwiftUI IAPView with an optional callback
-                let iapView = IAPView(onConsumablePurchased : { [weak self] purchaseSuccessful in
-                    guard let self = self else { return }
-                    
-                    if purchaseSuccessful {
-                        if let templateId = engine.templateHandler.currentTemplateInfo?.templateId{
-                            let tempName = engine.templateHandler.currentTemplateInfo?.templateName
-
-                            // Handle the purchase success
-                            print("Purchase was successful!")
-                            if iapViewModel.consumablePurchasedProduct != nil{
-//                                engine.sceneManager.canRenderWatermark(false)
-//                                engine.viewManager?.canRenderWatermark(false)
-                                let templateId =  DBManager.shared.duplicateTemplate(templateID: templateId, templateType: "NonDraft", isSavedDesignDuplicate: true)
-                                //relayoutViewForPreviewAfterPurchase2(templateId: templateId)
-                                self.addShimmerEffect()
-                                self.resizeViewForEdit2(templateId: templateId)
-                            }
-                            else if !iapViewModel.purchasedProducts.isEmpty{
-                                //relayoutViewForPreviewAfterPurchase2(templateId: templateId)
-                                
-                                // doing on a urgent basis , would give it a thought before actual product release 
-                                if engine.templateHandler.currentTemplateInfo!.isPremium == 1 && engine.templateHandler.currentTemplateInfo!.category == "TEMPLATE" {
-                                    let templateId =  DBManager.shared.duplicateTemplate(templateID: templateId, templateType: "NonDraft", isSavedDesignDuplicate: true)
-                                    self.addShimmerEffect()
-                                    self.resizeViewForEdit2(templateId: templateId)
-
-                                } else {
-                                    self.addShimmerEffect()
-                                    self.resizeViewForEdit2(templateId: templateId)
-
-                                }
-                            }
-                            
-                            if iapViewModel.consumablePurchasedProduct != nil{
-                                if let product = iapViewModel.consumablePurchasedProduct{
-                                    let currency = getCurrencySymbol(from: product)!
-                                    _ = Double(truncating: product.price as NSNumber)
-//                                    self.anayticsLogger.logPremiumInteraction(action: .SinglePurchase, planType: product.displayName, currency: currency, templateName: tempName ?? "None")
-                                }
-                            }
-                            
-                           
-                        }
-                    } else {
-//                        engine.sceneManager.canRenderWatermark(true)
-//                        engine.viewManager?.canRenderWatermark(true)
-//                        isTemplateConsumed = false
-
-                        // Handle the purchase failure
-                        print("Purchase failed!")
-                    }
-                },isSingleTemplateSelectedOrNot: true, consumableImage: Image(uiImage: thumbImage)).environmentObject(UIStateManager.shared)
-                var hostingerController = UIHostingController(rootView: iapView)
-                hostingerController.isModalInPresentation = true
-                self.present(hostingerController, animated: true)
-            }.store(in: &actionStateCancellables)
-            
-            templateHandler.currentActionState.$didPreviewTapped.dropFirst().sink{ [weak  self] value in
-                guard let self = self else { return }
-                
-                if value != engine.templateHandler.currentActionState.didPreviewTapped{
-                    engine.editorUIState = .Preview
-                    engine.templateHandler.deepSetCurrentModel(id: -1)
-                    engine.templateHandler.currentActionState.timelineShow = false
-                    relayoutViewForPreview2()
-                }
-                else{
-                    engine.timeLoopHandler?.renderState = .Stopped
-                    resizeViewForEdit2()
-                    engine.templateHandler.currentActionState.timelineShow = true
-                   
-                }
-            }.store(in: &actionStateCancellables)
-            
-            templateHandler.currentActionState.$didGetPremiumTapped.dropFirst().sink {[weak self] value in
-                guard let self = self else { return }
-                
-//                if value == true{
-//                    Analytics.logEvent("Premium tapped", parameters: nil)
-//                    Analytics.setUserProperty("Export Button Tapped", forName: "Get Premium")
-//                    let subscriptionManager = SubscriptionManager.sm  // Create an instance of SubscriptionManager
-//                    
-//                    let premiumPageVC = PremiumPageVC(delegate: subscriptionManager, dataSource: subscriptionManager)
-//                    
-//                    self?.navigationController?.present(premiumPageVC, animated: false)
-//                    
-//                    print("get premium pressed")
-//                }
-                // For Premium Button Tapped On Watermark & Export Option
-                self.navigationController?.present(UIHostingController(rootView:IAPView().environmentObject(UIStateManager.shared).interactiveDismissDisabled().environment(\.sizeCategory, .medium)), animated: true)
-            }.store(in: &actionStateCancellables)
             
             templateHandler.currentActionState.$showNavgiationItems.dropFirst().sink { [weak self] value in
                 guard let self = self else { return }
@@ -272,11 +127,17 @@ extension EditorVC {
                  didTappExport ? removeToolBar() : addToolBar()
                  templateHandler.currentActionState.showMusicPickerRoundButton = !didTappExport
                  templateHandler.currentActionState.showPlayPauseButton = !didTappExport
-                 templateHandler.currentActionState.showThumbnailNavItems = didTappExport
+                 viewModel?.showThumbnailNavItems = didTappExport
              }
 //                 }
 //             }
              
+         }.store(in: &actionStateCancellables)
+         
+         templateHandler.currentActionState.$didGetPremiumTapped.dropFirst().sink {[weak self] value in
+             guard let self = self else { return }
+             // For Premium Button Tapped On Watermark & Export Option
+             self.navigationController?.present(UIHostingController(rootView:IAPView().environmentObject(UIStateManager.shared).interactiveDismissDisabled().environment(\.sizeCategory, .medium)), animated: true)
          }.store(in: &actionStateCancellables)
          
             templateHandler.currentActionState.$showMultiSelectNavItems.dropFirst().sink { [weak self] value in
@@ -284,37 +145,6 @@ extension EditorVC {
                 if value == true{
                     addMultiSelectNavItems()
                 }
-            }.store(in: &actionStateCancellables)
-         
-         templateHandler.currentActionState.$showThumbnailNavItems.dropFirst().sink { [weak self] value in
-             guard let self = self else { return }
-             if value == true{
-                 addThumbnailNavItems()
-             }
-         }.store(in: &actionStateCancellables)
-            
-            templateHandler.currentActionState.$didLayersTapped.dropFirst().sink { [weak self] value in
-                guard let self = self else { return }
-                if value == true{
-                    logErrorJD(tag: .LockAllLayers)
-//                    let lockAllState = templateHandler.filterAndTransformLockAll(templateHandler.currentPageModel!)
-//                  
-//                    let vc = StackedViewController(viewModel: engine.layersManager,multiPlier: 1)
-//                    self.addChildVCWithMultiplier(vc,heightMultiplier: 1)
-//                  
-//                    self.navigationController?.isNavigationBarHidden = true
-                    if engine.templateHandler.currentPageModel?.activeChildren.count == 0{
-                        showNoLayerAlert()
-                    }else{
-                        let layersManager = engine.layersManager
-                        layersManager.setTemplateHandler(th: engine.templateHandler)
-                        let vc = StackedViewController(viewModel:layersManager ,multiPlier: 1)
-                        self.addChildVCWithMultiplier(vc,heightMultiplier: 1)
-                        self.navigationController?.isNavigationBarHidden = true
-                    }
-                }
-//                self.anayticsLogger.logEditorInteraction(action: .layersTapped)
-
             }.store(in: &actionStateCancellables)
             
             templateHandler.currentActionState.$showGroupButton.dropFirst().sink { [weak self] value in
@@ -332,7 +162,31 @@ extension EditorVC {
              showTimeline ? timelineView?.showTimeline() :  timelineView?.hideTimelines()
             }.store(in: &actionStateCancellables)
             
+         templateHandler.currentActionState.$didWatchAdsTapped.dropFirst().sink { [weak self] value in
+             guard let self = self else { return }
+             
+             if value == true{
+                 
+                 self.onSave()
+                 
+             }
+         }.store(in: &actionStateCancellables)
          
+         templateHandler.currentActionState.$didPreviewTapped.dropFirst().sink{ [weak  self] value in
+             guard let self = self else { return }
+             if value != templateHandler.currentActionState.didPreviewTapped{
+                 engine.editorUIState = .Preview
+                 engine.templateHandler.deepSetCurrentModel(id: -1)
+                 engine.templateHandler.currentActionState.timelineShow = false
+                 relayoutViewForPreview2()
+             }
+             else{
+                 engine.timeLoopHandler?.renderState = .Stopped
+                 resizeViewForEdit2()
+                 engine.templateHandler.currentActionState.timelineShow = true
+                
+             }
+         }.store(in: &editorVMCancellables)
          
          UIStateManager.shared.$isPremium.sink {[weak self] isPremium in
              guard let self = self else { return }
@@ -345,6 +199,149 @@ extension EditorVC {
          }.store(in: &playerControlsCancellables)
     }
     
+    func findVisibleNavigationController() -> UINavigationController? {
+        // Try multiple possibilities (embedded inside HostingController)
+        if let nav = navigationController {
+            return nav
+        } else if let nav = parent?.navigationController {
+            return nav
+        } else if let hostNav = parent as? UINavigationController {
+            return hostNav
+        } else {
+            return nil
+        }
+    }
+    
+    func observeEditorAction(){
+        
+        guard let engine = engine else {
+            printLog("template handler nil")
+            return }
+        
+        editorVMCancellables.removeAll()
+        logVerbose("editor VM listeners ON \(editorVMCancellables.count)")
+        
+         // conflict with neeshu
+        
+//        viewModel.$didUseMeTapped.dropFirst().sink{ [weak  self] value in
+//            guard let self = self else { return }
+//            
+//            addShimmerEffect()
+//            if value != engine.templateHandler.currentActionState.didUseMeTapped{
+//                if  engine.templateHandler.playerControls?.renderState == .Playing{
+//                    engine.templateHandler.playerControls?.renderState = .Completed
+//                }
+//                relayoutViewForEdit2()
+//                DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+//                    guard let self = self else { return }
+////                        engine.showDrop = autoSaveDesignDrop
+//                    Drops.show(autoSaveDesignDrop)
+//                }
+//               
+//            }
+//        }.store(in: &actionStateCancellables)
+        
+        //Neeshu do this work for the Premium Page.
+//        viewModel.$didPurchasedTapped.dropFirst().sink{[weak  self] value in
+//            guard let self = self else { return }
+//            
+//            if  engine.templateHandler.playerControls?.renderState == .Playing{
+//                engine.templateHandler.playerControls?.renderState = .Completed
+//            }
+//          /*  let iapViewModel = IAPViewModel(isSingleTemplateSelectedOrNot: true, consumableImage: Image(uiImage: thumbImage), defaultProductType: .onetime, premiumPageLoadingState: .normal)*/
+//            
+//            // Create the SwiftUI IAPView with an optional callback
+//            let iapView = IAPView(onConsumablePurchased : { [weak self] purchaseSuccessful in
+//                guard let self = self else { return }
+//                
+//                if purchaseSuccessful {
+//                    if let templateId = engine.templateHandler.currentTemplateInfo?.templateId{
+//                        let tempName = engine.templateHandler.currentTemplateInfo?.templateName
+//
+//                        // Handle the purchase success
+//                        print("Purchase was successful!")
+//                        if iapViewModel.consumablePurchasedProduct != nil{
+////                                engine.sceneManager.canRenderWatermark(false)
+////                                engine.viewManager?.canRenderWatermark(false)
+//                            let templateId =  DBManager.shared.duplicateTemplate(templateID: templateId, templateType: "NonDraft", isSavedDesignDuplicate: true)
+//                            //relayoutViewForPreviewAfterPurchase2(templateId: templateId)
+//                            self.addShimmerEffect()
+//                            self.resizeViewForEdit2(templateId: templateId)
+//                        }
+//                        else if !iapViewModel.purchasedProducts.isEmpty{
+//                            //relayoutViewForPreviewAfterPurchase2(templateId: templateId)
+//                            
+//                            // doing on a urgent basis , would give it a thought before actual product release
+//                            if engine.templateHandler.currentTemplateInfo!.isPremium == 1 && engine.templateHandler.currentTemplateInfo!.category == "TEMPLATE" {
+//                                let templateId =  DBManager.shared.duplicateTemplate(templateID: templateId, templateType: "NonDraft", isSavedDesignDuplicate: true)
+//                                self.addShimmerEffect()
+//                                self.resizeViewForEdit2(templateId: templateId)
+//
+//                            } else {
+//                                self.addShimmerEffect()
+//                                self.resizeViewForEdit2(templateId: templateId)
+//
+//                            }
+//                        }
+//                        
+//                        if iapViewModel.consumablePurchasedProduct != nil{
+//                            if let product = iapViewModel.consumablePurchasedProduct{
+//                                let currency = getCurrencySymbol(from: product)!
+//                                _ = Double(truncating: product.price as NSNumber)
+////                                    self.anayticsLogger.logPremiumInteraction(action: .SinglePurchase, planType: product.displayName, currency: currency, templateName: tempName ?? "None")
+//                            }
+//                        }
+//                        
+//                       
+//                    }
+//                } else {
+////                        engine.sceneManager.canRenderWatermark(true)
+////                        engine.viewManager?.canRenderWatermark(true)
+////                        isTemplateConsumed = false
+//
+//                    // Handle the purchase failure
+//                    print("Purchase failed!")
+//                }
+//            },isSingleTemplateSelectedOrNot: true, consumableImage: Image(uiImage: thumbImage)).environmentObject(UIStateManager.shared)
+//            var hostingerController = UIHostingController(rootView: iapView)
+//            hostingerController.isModalInPresentation = true
+//            self.present(hostingerController, animated: true)
+//        }.store(in: &actionStateCancellables)
+        
+        
+        
+        
+        viewModel?.$showThumbnailNavItems.dropFirst().sink { [weak self] value in
+            guard let self = self else { return }
+            if value == true{
+                addThumbnailNavItems()
+            }
+        }.store(in: &editorVMCancellables)
+           
+        controlPanelManager?.$didLayersTapped.dropFirst().sink { [weak self] value in
+               guard let self = self else { return }
+               if value == true{
+                   logErrorJD(tag: .LockAllLayers)
+//                    let lockAllState = templateHandler.filterAndTransformLockAll(templateHandler.currentPageModel!)
+//
+//                    let vc = StackedViewController(viewModel: engine.layersManager,multiPlier: 1)
+//                    self.addChildVCWithMultiplier(vc,heightMultiplier: 1)
+//
+//                    self.navigationController?.isNavigationBarHidden = true
+                   if engine.templateHandler.currentPageModel?.activeChildren.count == 0{
+                       showNoLayerAlert()
+                   }else{
+                       let layersManager = engine.layersManager
+                       layersManager.setTemplateHandler(th: engine.templateHandler)
+                       let vc = StackedViewController(viewModel:layersManager ,multiPlier: 1)
+                       self.addChildVCWithMultiplier(vc,heightMultiplier: 1)
+                       self.navigationController?.isNavigationBarHidden = true
+                   }
+               }
+//                self.anayticsLogger.logEditorInteraction(action: .layersTapped)
+
+           }.store(in: &editorVMCancellables)
+    }
     
     
     func addMultiSelectNavItems(){
@@ -353,6 +350,12 @@ extension EditorVC {
         
         group?.isEnabled = false
         navigationItem.rightBarButtonItems = [cancel!,group!]
+        
+        if let nav = findVisibleNavigationController() {
+                nav.topViewController?.navigationItem.rightBarButtonItems = navigationItem.rightBarButtonItems
+                nav.topViewController?.navigationItem.leftBarButtonItems = navigationItem.leftBarButtonItems
+                nav.topViewController?.title = navigationItem.title
+            }
     }
     
     func addThumbnailNavItems(){
@@ -362,6 +365,11 @@ extension EditorVC {
 
         navigationItem.rightBarButtonItems = [cancel!]
         
+        if let nav = findVisibleNavigationController() {
+                nav.topViewController?.navigationItem.rightBarButtonItems = navigationItem.rightBarButtonItems
+                nav.topViewController?.navigationItem.leftBarButtonItems = navigationItem.leftBarButtonItems
+                nav.topViewController?.title = navigationItem.title
+            }
     }
     
     func showNoLayerAlert(){

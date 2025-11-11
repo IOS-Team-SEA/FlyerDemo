@@ -19,7 +19,7 @@ struct StickerContainer: View {
           -Delete, Duplicate, Copy, Paste, Unlock/Lock, Group/UnGroup, Show/Duration.
      */
     @ObservedObject var currentActionModel : ActionStates
-    
+    @ObservedObject var cpm : ControlPanelManager
     
     /* Panel State */
     @State var didReplaceTabClicked : Bool        = false
@@ -58,7 +58,7 @@ struct StickerContainer: View {
                 OpacityPanel(opacity: $currentModel.modelOpacity, showPanel: $showPanel, endOpacity: $currentModel.endOpacity, beginOpacity: $currentModel.beginOpacity, updateThumb: $currentActionModel.updateThumb).frame(height: panelHeight)
             }else if showPanel && didColorTabClicked{
                 
-                ColorPanel(templateID: currentModel.templateID, startColor: $currentModel.beginStickerFilter, endColor: $currentModel.endStickerFilter, colorFilter: $currentModel.stickerFilter, updateThumb: $currentActionModel.updateThumb,lastSelectedColor: $currentActionModel.lastSelectedColor, thumbImage: $currentActionModel.pageModelArray.first!.thumbImage, showResetText: .constant(true)).frame(height: panelHeight)
+                ColorPanel(templateID: currentModel.templateID, startColor: $currentModel.beginStickerFilter, endColor: $currentModel.endStickerFilter, colorFilter: $currentModel.stickerFilter, updateThumb: $currentActionModel.updateThumb,lastSelectedColor: $cpm.lastSelectedColor, thumbImage: $currentActionModel.pageModelArray.first!.thumbImage, showResetText: .constant(true)).frame(height: panelHeight)
             }else if didHueTabClicked{
                 
                 HuePanel(beginHue: $currentModel.beginStickerFilter, endHue: $currentModel.endStickerFilter, stickerFilter: $currentModel.stickerFilter, updateThumb: $currentActionModel.updateThumb).frame(height: panelHeight)
@@ -68,7 +68,7 @@ struct StickerContainer: View {
                 CropperView(previousImage: currentModel.changeOrReplaceImage?.imageModel,replaceImage: $currentActionModel.replaceSticker, image: currentModel.getCropperImage(engineConfig: AppEngineConfigure()), cropRect: (currentActionModel.replaceSticker?.cropRect ?? CGRect(x: 0, y: 0, width: 1, height: 1))).frame(height: panelHeight)
             }
             else if didTransformTabClicked{
-                TransformPanel(flipHorizontal: $currentModel.modelFlipHorizontal, flipVertical: $currentModel.modelFlipVertical, lastSelectedFlipV: $currentActionModel.lastSelectedFlipV, lastSelectedFlipH: $currentActionModel.lastSelectedFlipH).frame(height: panelHeight)
+                TransformPanel(flipHorizontal: $currentModel.modelFlipHorizontal, flipVertical: $currentModel.modelFlipVertical, lastSelectedFlipV: $cpm.lastSelectedFlipV, lastSelectedFlipH: $cpm.lastSelectedFlipH).frame(height: panelHeight)
             }
             else if didAnimationTabClicked{
                 AnimationsPanelView(durationIN: $currentModel.inAnimationDuration, durationOUT: $currentModel.outAnimationDuration, durationLOOP: $currentModel.loopAnimationDuration, beginDurationIN: $currentModel.inAnimationBeginDuration, endDurationIN: $currentModel.inAnimationEndDuration, beginDurationOUT: $currentModel.outAnimationBeginDuration, endDurationOUT: $currentModel.outAnimationEndDuration, beginDurationLOOP: $currentModel.loopAnimationBeginDuration, endDurationLOOP: $currentModel.loopAnimationEndDuration,inAnimTemplate: $currentModel.inAnimation , outAnimTemplate: $currentModel.outAnimation,loopAnimTemplate: $currentModel.loopAnimation, lastSelectedAnimType: $currentActionModel.lastSelectedAnimType, lastSelectedCategoryId: $currentActionModel.lastSelectedCategoryId).frame(height: panelHeight)
@@ -79,7 +79,7 @@ struct StickerContainer: View {
             }
             
             else if didFilterAdjustmentClicked{
-                FilterAdjustmentView(selectedFilter: $currentModel.filterType, lastSelectedFilter: $currentActionModel.lastSelectedFilter, updateThumb: $currentActionModel.updateThumb).frame(height: panelHeight)
+                FilterAdjustmentView(selectedFilter: $currentModel.filterType, lastSelectedFilter: $cpm.lastSelectedFilter, updateThumb: $currentActionModel.updateThumb).frame(height: panelHeight)
             }else if didColorAdjustmentClicked{
                 ColorAdjustMentView(brightness: $currentModel.brightnessIntensity, beginBrightness: $currentModel.beginBrightnessIntensity, endBrightness: $currentModel.endBrightnessIntensity, contrast: $currentModel.contrastIntensity, beginContrast: $currentModel.beginContrastIntensity, endContrast: $currentModel.endContrastIntensity, highlight: $currentModel.highlightIntensity, beginHighlight: $currentModel.beginHighlightIntensity, endHighlight: $currentModel.endHighlightIntensity, shadows: $currentModel.shadowsIntensity, beginShadows: $currentModel.beginShadowsIntensity, endShadows: $currentModel.endShadowsIntensity, saturation: $currentModel.saturationIntensity, beginSaturation: $currentModel.beginSaturationIntensity, endSaturation: $currentModel.endSaturationIntensity, vibrance: $currentModel.vibranceIntensity, beginVibrance: $currentModel.beginVibranceIntensity, endVibrance: $currentModel.endVibranceIntensity, sharpness: $currentModel.sharpnessIntensity, beginSharpness: $currentModel.beginSharpnessIntensity, endSharpness: $currentModel.endSharpnessIntensity, warmth: $currentModel.warmthIntensity, beginWarmth: $currentModel.beginWarmthIntensity, endWarmth: $currentModel.endWarmthIntensity, tint: $currentModel.tintIntensity, beginTint: $currentModel.beginTintIntensity, endTint: $currentModel.endTintIntensity, selectedColorAdjustment: $currentModel.colorAdjustmentType, updateThumb: $currentActionModel.updateThumb).frame(height: panelHeight)
             }
@@ -88,7 +88,7 @@ struct StickerContainer: View {
                 Spacer()
             }
             
-            StcikerContainreTabBar(didReplaceTabClicked: $didReplaceTabClicked, didColorTabClicked: $didColorTabClicked, didHueTabClicked: $didHueTabClicked, didNudgeTabClicked: $didNudgeTabClicked, didCropTabClicked: $didCropTabClicked, didTransformTabClicked: $didTransformTabClicked, didOpacityTabClicked: $didOpacityTabClicked, didPositionTabClicked: $didPositionTabClicked, didAnimationTabClicked: $didAnimationTabClicked, didDeleteTabClicked: $currentModel.softDelete, didCopyTabClicked: $didCopyTabClicked, didDuplicateTabClicked: $didDuplicateTabClicked, didPasteTabClicked: $didPasteTabClicked, didLockUnclockTabClicked: $currentModel.lockStatus, didGroupTabClicked: $didGroupTabClicked, didUngroupTabClicked: $didUngroupTabClicked, didShowDurationButtonCliked: $currentActionModel.didShowDurationButtonCliked,lastSelectedTab: $currentActionModel.lastSelectedTextTab, didCloseButtonTapped: $currentActionModel.didCloseTabbarTapped, showPanel: $showPanel, isCurrentModelDeleted: $currentActionModel.isCurrentModelDeleted, shouldRefreshOnAddComponent: $currentActionModel.shouldRefreshOnAddComponent, delegate: delegate, didFilterAdjustmentClicked: $didFilterAdjustmentClicked, didColorAdjustmentClicked: $didColorAdjustmentClicked).frame(height: containerDefaultHeight)
+            StcikerContainreTabBar(didReplaceTabClicked: $didReplaceTabClicked, didColorTabClicked: $didColorTabClicked, didHueTabClicked: $didHueTabClicked, didNudgeTabClicked: $didNudgeTabClicked, didCropTabClicked: $didCropTabClicked, didTransformTabClicked: $didTransformTabClicked, didOpacityTabClicked: $didOpacityTabClicked, didPositionTabClicked: $didPositionTabClicked, didAnimationTabClicked: $didAnimationTabClicked, didDeleteTabClicked: $currentModel.softDelete, didCopyTabClicked: $didCopyTabClicked, didDuplicateTabClicked: $didDuplicateTabClicked, didPasteTabClicked: $didPasteTabClicked, didLockUnclockTabClicked: $currentModel.lockStatus, didGroupTabClicked: $didGroupTabClicked, didUngroupTabClicked: $didUngroupTabClicked, didShowDurationButtonCliked: $cpm.didShowDurationButtonCliked,lastSelectedTab: $currentActionModel.lastSelectedTextTab, didCloseButtonTapped: $cpm.didCloseTabbarTapped, showPanel: $showPanel, isCurrentModelDeleted: $currentActionModel.isCurrentModelDeleted, shouldRefreshOnAddComponent: $currentActionModel.shouldRefreshOnAddComponent, delegate: delegate, didFilterAdjustmentClicked: $didFilterAdjustmentClicked, didColorAdjustmentClicked: $didColorAdjustmentClicked).frame(height: containerDefaultHeight)
                 .frame(maxWidth: tabbarWidth)
                 .frame(height: tabbarHeight)
 //                .padding(.bottom, bottomPadding)

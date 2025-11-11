@@ -13,7 +13,7 @@ extension EditorVC {
     func calculateSizeForEditorView() -> (CGRect,CGPoint) {
         
         if loadingState == .Preview {
-            let navBarHeight = self.navigationController?.navigationBar.frame.height ?? 0
+            let navBarHeight = 44.0//self.navigationController?.navigationBar.frame.height ?? 0
             
             let HeightMargin = safeAreaInsetsTop  +  safeAreaInsetsBottom + navBarHeight
             let bottomPanelHeightConstant = ((UIScreen.main.bounds.height * 22) / 100) + 22 //250
@@ -34,7 +34,7 @@ extension EditorVC {
         }else if loadingState == .Edit {
             let bottomPanelHeightConstant = 250
             
-            let navBarHeight = self.navigationController?.navigationBar.frame.height ?? 0
+            let navBarHeight = 44.0//self.navigationController?.navigationBar.frame.height ?? 0
             
             let HeightMargin = safeAreaInsetsTop  +  safeAreaInsetsBottom + navBarHeight
             

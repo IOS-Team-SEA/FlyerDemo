@@ -80,7 +80,10 @@ final class AppPackageLogger: PackageLogger{
 final class AppSceneConfigure: SceneConfiguration{
     var accentColor: UIColor = AppStyle.accentColorUIKit
     
-    var contentScaleFactor: CGFloat = UIStateManager.shared.contentscaleFactor
+    var contentScaleFactor: CGFloat {
+        get { UIStateManager.shared.contentscaleFactor }
+        set { UIStateManager.shared.contentscaleFactor = newValue }
+    }
     
     
 }

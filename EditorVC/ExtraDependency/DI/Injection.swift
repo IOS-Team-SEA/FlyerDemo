@@ -6,6 +6,7 @@
 //
 import Swinject
 import IOS_CommonEditor
+import UIKit
 
 final class Injection {
     static var shared = Injection()
@@ -48,6 +49,11 @@ final class Injection {
            
         }.inObjectScope(.transient)
 
+        container.register(EditorVM.self) { (_, templateId: Int, thumbImage: UIImage) in
+            EditorVM(templateId: templateId, thumbImage: thumbImage)
+        }
+        .inObjectScope(.transient)
+        
         container.register(ApiService.self) { _ in ApiService() }
             .inObjectScope(.transient)
 //        container.register(RSVPAPIStrore.self) { _ in RSVPAPIStrore() }

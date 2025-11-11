@@ -44,7 +44,7 @@ struct BaseContainer: View {
 
             case .UseMe:
                 Button{
-                    actionStates.didUseMeTapped = true
+//                    actionStates.didUseMeTapped = true
                 }label: {
                     Text("Use_Me")
                         .font(.callout)
@@ -59,7 +59,7 @@ struct BaseContainer: View {
             case .Purchase:
                 Button{
 //                    if !actionStates.didPurchasedTapped {
-                        actionStates.didPurchasedTapped = true
+//                        actionStates.didPurchasedTapped = true
 //                    }
                 }label: {
 //                    if actionStates.didPurchasedTapped{
@@ -102,20 +102,20 @@ struct BaseContainer: View {
                 .cornerRadius(5)
                 .padding()
             case .Personalised:
-//                Button{
+                Button{
 //                    actionStates.didPersonalizeTapped = true
-//                }label: {
-//                        Text("Personalise_")
-//                            .font(.callout)
-//                            .foregroundColor(.white)
-//                            .frame(width: 150, height: 50)
-//                }
-//                .frame(width: 200, height: 50)
-//                .background(AppStyle.accentColor_SwiftUI)
-//                .cornerRadius(5)
-//                .padding()
+                }label: {
+                        Text("Personalise_")
+                            .font(.callout)
+                            .foregroundColor(.white)
+                            .frame(width: 150, height: 50)
+                }
+                .frame(width: 200, height: 50)
+                .background(AppStyle.accentColor_SwiftUI)
+                .cornerRadius(5)
+                .padding()
                 PrimaryButton(title: "Personalise_",icon: "wand.and.sparkles",isPremium: false,isFullWidth: true) {
-                    actionStates.didPersonalizeTapped = true
+//                    actionStates.didPersonalizeTapped = true
 
                 }    .padding(.horizontal)
             }

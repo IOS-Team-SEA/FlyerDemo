@@ -46,6 +46,7 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
    
     var timelineView : IOS_CommonEditor.TimelineView?
     var actionStateCancellables: Set<AnyCancellable> = Set<AnyCancellable>()
+    var editorVMCancellables: Set<AnyCancellable> = Set<AnyCancellable>()
     var undoRedoCancellables : Set<AnyCancellable> = Set<AnyCancellable>()
     
 //    var cancellablesForPersonalised: Set<AnyCancellable> = []
@@ -85,6 +86,8 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
     var muteHostingerController : UIHostingController<MuteControl>!
   //  @EnvironmentObject var subscriptionEnvironmentObj : SubscriptionEnvironmentObj
     
+    var controlPanelManager: ControlPanelManager?
+    
     //MARK: - Outlets
     internal var navTitle: UILabel!
     
@@ -96,11 +99,12 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
     var cancellablesForEditor: Set<AnyCancellable> = []
     
     //MARK: - Variables
-    var viewModel = EditorVM()
+//    var viewModel = EditorVM()
+    weak var viewModel: EditorVM?
 
 
     var engine : MetalEngine? {
-        return viewModel.metalEngine
+        return viewModel?.metalEngine
     }
     
      var undoButton:UIBarButtonItem?
@@ -121,14 +125,21 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
     
 //    var userDesignsVM = Injection.shared.inject(id: "UserDesignVM", type: UserDesignVM.self)!
 
-    init(templateID : Int, thumbImage : UIImage){
-//        viewModel = EditorVM()
-        currentTemplateID = templateID
-       
-        self.thumbImage = thumbImage
+//    init(templateID : Int, thumbImage : UIImage){
+////        viewModel = EditorVM()
+//        currentTemplateID = templateID
+//       
+//        self.thumbImage = thumbImage
+//        super.init(nibName: "EditorVC", bundle: nil)
+//       
+//        
+//    }
+    
+    init(viewModel: EditorVM){
+        self.viewModel = viewModel
+        currentTemplateID = viewModel.templateId
+        self.thumbImage = viewModel.thumbImage
         super.init(nibName: "EditorVC", bundle: nil)
-       
-        
     }
     
     required init?(coder: NSCoder) {
@@ -140,7 +151,10 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
         undoRedoCancellables.removeAll()
         cancellablesForEditor.removeAll()
         playerControlsCancellables.removeAll()
-        
+        editorVMCancellables.removeAll()
+        controlPanelManager?.editorVC = nil
+        controlPanelManager?.cpmCancellables.removeAll()
+        controlPanelManager = nil
         engine?.drawCallManager?.stopNotifyingDrawCall()
 //        anayticsLogger.logEditorInteraction(action: .exit)
 
@@ -152,6 +166,7 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         safeAreaInsetsTop = (UIApplication.shared.cWindow?.safeAreaInsets.top ?? 0)
         safeAreaInsetsBottom = (UIApplication.shared.cWindow?.safeAreaInsets.bottom ?? 0)
         addShimmerEffect()
@@ -164,7 +179,7 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
         navigationItem.titleView = navTitle
         navigationController?.navigationBar.backgroundColor = UIColor.systemBackground//UIColor(named: "editorBG")!
         
-    //    setEditorView()
+//        setEditorView()
         setViewsNLoadTemplate2()
         
         observeUndoRedoCount()
@@ -210,6 +225,11 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
         }
     }
   
+    func setupControlPanelManager() {
+        if controlPanelManager == nil {
+            controlPanelManager = ControlPanelManager(editorVC: self)
+        }
+    }
     
     // Function for removing the all toolbar buttons.
     func removeToolBar(){
@@ -225,203 +245,204 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
     
     
     func addToolBar() {
-       
-
-            // Create a function to generate the custom view for the UIBarButtonItem
-            func createBarButtonItem(imageName: String, text: String, action: Selector) -> UIBarButtonItem {
-                // Create a UIButton and set its image and title
-                let button = UIButton(type: .system)
-                button.setImage(UIImage(systemName: imageName), for: .normal)
-                button.setTitle(text, for: .normal)
-                button.sizeToFit()
-                
-                // Adjust the spacing between the image and the title
-                button.tintColor = .systemBlue  // Set the desired tint color
-                button.titleLabel?.font = UIFont.systemFont(ofSize: 16)  // Set the desired font size
-                button.contentHorizontalAlignment = .center
-                button.semanticContentAttribute = .forceLeftToRight  // Image on the left, text on the right
-                
-                // Add target action
-                button.addTarget(self, action: action, for: .touchUpInside)
-                
-                // Create a UIBarButtonItem with the custom UIButton
-                let barButtonItem = UIBarButtonItem(customView: button)
-                
-                return barButtonItem
-            }
-
-          var undoRedoState = false
-            // Now create your undo and redo buttons with text
-            if undoButton == nil{
-                undoButton = createBarButtonItem(
-                    imageName: "arrow.uturn.backward.circle.fill",
-                    text: "Undo_".translate(),
-                    action: #selector(undoAction)
-                )
-            }
-            else {
-                undoRedoState = true
-            }
-            if redoButton == nil{
-                redoButton = createBarButtonItem(
-                    imageName: "arrow.uturn.forward.circle.fill",
-                    text: "Redo_".translate(),
-                    action: #selector(redoAction)
-                )
-            }
-            else {
-                undoRedoState = true
-            }
-
-
+        
+        
+        // Create a function to generate the custom view for the UIBarButtonItem
+        func createBarButtonItem(imageName: String, text: String, action: Selector) -> UIBarButtonItem {
+            // Create a UIButton and set its image and title
+            let button = UIButton(type: .system)
+            button.setImage(UIImage(systemName: imageName), for: .normal)
+            button.setTitle(text, for: .normal)
+            button.sizeToFit()
             
+            // Adjust the spacing between the image and the title
+            button.tintColor = .systemBlue  // Set the desired tint color
+            button.titleLabel?.font = UIFont.systemFont(ofSize: 16)  // Set the desired font size
+            button.contentHorizontalAlignment = .center
+            button.semanticContentAttribute = .forceLeftToRight  // Image on the left, text on the right
             
+            // Add target action
+            button.addTarget(self, action: action, for: .touchUpInside)
             
+            // Create a UIBarButtonItem with the custom UIButton
+            let barButtonItem = UIBarButtonItem(customView: button)
             
-            //        let redoButton = UIBarButtonItem(barButtonSystemItem: .redo, target: self, action: #selector(redoAction))
-            
+            return barButtonItem
+        }
+        
+        var undoRedoState = false
+        // Now create your undo and redo buttons with text
+        if undoButton == nil{
+            undoButton = createBarButtonItem(
+                imageName: "arrow.uturn.backward.circle.fill",
+                text: "Undo_".translate(),
+                action: #selector(undoAction)
+            )
+        }
+        else {
+            undoRedoState = true
+        }
+        if redoButton == nil{
+            redoButton = createBarButtonItem(
+                imageName: "arrow.uturn.forward.circle.fill",
+                text: "Redo_".translate(),
+                action: #selector(redoAction)
+            )
+        }
+        else {
+            undoRedoState = true
+        }
+        
+        
+        
+        
+        
+        
+        //        let redoButton = UIBarButtonItem(barButtonSystemItem: .redo, target: self, action: #selector(redoAction))
+        
         exportButton = UIBarButtonItem(image: UIImage(systemName: "checkmark"), style: .plain, target: self, action: #selector(exportAction))
-            
+        
         let multiSelect = UIAction(title: "Multi_Select".translate(), image: UIImage(systemName: "square.on.square.dashed"), handler: { [weak engine] _ in
             guard let engine = engine else { return }
-                // Perform play action
-                //            hostingerController?.rootView = AnyView(ParentContainer(currentModel: ParentInfo(), actionStates: self.engine.templateHandler.actionStates, delegate: self))
-                
-                engine.templateHandler.currentActionState.multiModeSelected = true
-            })
+            // Perform play action
+            //            hostingerController?.rootView = AnyView(ParentContainer(currentModel: ParentInfo(), actionStates: self.engine.templateHandler.actionStates, delegate: self))
             
+            engine.templateHandler.currentActionState.multiModeSelected = true
+        })
+        
+        
+        let resizeAction = UIAction(title: "Resize_".translate(), image: UIImage(systemName: "square.resize"), handler: { [weak self,weak engine] _ in
+            guard let engine = engine else { return }
+            guard let self = self else { return }
             
-            let resizeAction = UIAction(title: "Resize_".translate(), image: UIImage(systemName: "square.resize"), handler: { [weak self,weak engine] _ in
-                guard let engine = engine else { return }
-                guard let self = self else { return }
-                
-                // Perform play action
-                    self.present(UIHostingController(rootView: RatioPickerGridView(currentActionState: engine.templateHandler.currentActionState, onRatioSelected: {
-                        self.dismiss(animated: true)
-                    }, createNewTapped: false).environmentObject(UIStateManager.shared).environment(\.sizeCategory, .medium)), animated: true)
-                
-            })
-            let Layers = UIAction(title: "Layers_".translate(), image: UIImage(systemName: "square.3.layers.3d"), handler: { [weak self,weak engine] _ in
-                guard let engine = engine else { return }
-                guard let self = self else { return }
-                
-                if engine.templateHandler.currentPageModel?.activeChildren.count == 0{
-                    showNoLayerAlert()
-                }else{
-                    let layersManager = engine.layersManager
-                    layersManager.setTemplateHandler(th: engine.templateHandler)
-                    let vc = StackedViewController(viewModel:layersManager ,multiPlier: 1)
-                    self.addChildVCWithMultiplier(vc,heightMultiplier: 1)
-                    self.navigationController?.isNavigationBarHidden = true
-                }
-            })
+            // Perform play action
+            self.present(UIHostingController(rootView: RatioPickerGridView(currentActionState: engine.templateHandler.currentActionState, onRatioSelected: {
+                self.dismiss(animated: true)
+            }, createNewTapped: false).environmentObject(UIStateManager.shared).environment(\.sizeCategory, .medium)), animated: true)
             
-            /* Neeshu Chnage For Zoom Control Enable*/
+        })
+        let Layers = UIAction(title: "Layers_".translate(), image: UIImage(systemName: "square.3.layers.3d"), handler: { [weak self,weak engine] _ in
+            guard let engine = engine else { return }
+            guard let self = self else { return }
             
-            let zoomEnable = UIAction(title: "Zoom_Enable".translate(), image: UIImage(systemName: "square.arrowtriangle.4.outward")) {
-                [weak engine] _ in
-                    guard let engine = engine else { return }
-                engine.templateHandler.currentActionState.zoomEnable.toggle()
+            if engine.templateHandler.currentPageModel?.activeChildren.count == 0{
+                showNoLayerAlert()
+            }else{
+                let layersManager = engine.layersManager
+                layersManager.setTemplateHandler(th: engine.templateHandler)
+                let vc = StackedViewController(viewModel:layersManager ,multiPlier: 1)
+                self.addChildVCWithMultiplier(vc,heightMultiplier: 1)
+                self.navigationController?.isNavigationBarHidden = true
             }
+        })
+        
+        /* Neeshu Chnage For Zoom Control Enable*/
+        
+        let zoomEnable = UIAction(title: "Zoom_Enable".translate(), image: UIImage(systemName: "square.arrowtriangle.4.outward")) {
+            [weak engine] _ in
+            guard let engine = engine else { return }
+            engine.templateHandler.currentActionState.zoomEnable.toggle()
+        }
+        
+        let preview = UIAction(title: "Preview_".translate()) {  [weak engine] _ in
+            guard let engine = engine else { return }
             
-            let preview = UIAction(title: "Preview_".translate()) {  [weak engine] _ in
-                guard let engine = engine else { return }
-
-                engine.templateHandler.currentActionState.didPreviewTapped = true
-            }
+            engine.templateHandler.currentActionState.didPreviewTapped = true
+            //                self.viewModel.didPreviewTapped = true
+        }
+        
+        
+        let pages = UIAction(title: "Pages_".translate(), image: UIImage(systemName: "doc"), handler: { [weak self,weak engine] _ in
+            guard let engine = engine else { return }
+            guard let self = self else { return }
+            guard let templateHandler = engine.templateHandler else { return }
+            guard let modelId = templateHandler.currentModel?.modelId else { return }
             
-            
-            let pages = UIAction(title: "Pages_".translate(), image: UIImage(systemName: "doc"), handler: { [weak self,weak engine] _ in
-                guard let engine = engine else { return }
-                guard let self = self else { return }
-                guard let templateHandler = engine.templateHandler else { return }
-                guard let modelId = templateHandler.currentModel?.modelId else { return }
-
-
-                // Perform stop action
-                        let pageContainer = PageContainerView(actionState: templateHandler.currentActionState, currentPageModel: templateHandler.currentPageModel!).environmentObject(self.viewModel.dsStore).environment(\.sizeCategory, .medium)
-                        
-                        let hostingController = UIHostingController(rootView:pageContainer)
-                        hostingController.modalPresentationStyle = .fullScreen
-                        self.present(hostingController, animated: true)
-                    
-                
-            })
-            
-            let basicAction = UIAction(
-                title: "Basic_".translate(),
-                state: PersistentStorage.snappingMode == 1 ? .on : .off,
-                handler: { [weak self,weak engine] _ in
-                    guard let engine = engine else { return }
-                    guard let self = self else { return }
-                    
-                    engine.templateHandler.currentActionState.snappingMode = .basic
-                    PersistentStorage.snappingMode = 1
-                    self.removeToolBar()
-                    self.addToolBar()
-                }
-            )
-                        
-            let advancedAction = UIAction(
-                title: "Advanced_".translate(),
-                state: PersistentStorage.snappingMode == 2 ? .on : .off,
-                handler: { [weak self,weak engine] _ in
-                    guard let engine = engine else { return }
-                    guard let self = self else { return }
-                    engine.templateHandler.currentActionState.snappingMode = .advanced
-                    PersistentStorage.snappingMode = 2
-                    self.removeToolBar()
-                    self.addToolBar()
-                }
-            )
-                        
-            let offAction = UIAction(
-                title: "Off_".translate(),
-                state: PersistentStorage.snappingMode == 0 ? .on : .off,
-                handler: { [weak self,weak engine] _ in
-                    guard let engine = engine else { return }
-                    guard let self = self else { return }
-                    engine.templateHandler.currentActionState.snappingMode = .off
-                    PersistentStorage.snappingMode = 0
-                    self.removeToolBar()
-                    self.addToolBar()
-                }
-            )
-          
-            let snap = UIMenu(title: "Snapping_".translate(), image: UIImage(systemName: "grid"), children: [basicAction, advancedAction, offAction])
             
             // Perform stop action
-            let hideAction = UIAction(title: "Hide_".translate(), handler: { [weak engine] _ in
+            let pageContainer = PageContainerView(actionState: templateHandler.currentActionState, currentPageModel: templateHandler.currentPageModel!).environmentObject(self.viewModel!.dsStore).environment(\.sizeCategory, .medium)
+            
+            let hostingController = UIHostingController(rootView:pageContainer)
+            hostingController.modalPresentationStyle = .fullScreen
+            self.present(hostingController, animated: true)
+            
+            
+        })
+        
+        let basicAction = UIAction(
+            title: "Basic_".translate(),
+            state: PersistentStorage.snappingMode == 1 ? .on : .off,
+            handler: { [weak self,weak engine] _ in
                 guard let engine = engine else { return }
-               
+                guard let self = self else { return }
                 
-//                print("Selected Yes")
-//                engine.templateHandler.currentActionState.timelineHide = true
-//                engine.timelineView.isHidden = true
-                engine.templateHandler.currentActionState.timelineShow = false
-            })
-            
-            let showAction = UIAction(title: "Show_".translate(), handler: { [weak engine] _ in
+                engine.templateHandler.currentActionState.snappingMode = .basic
+                PersistentStorage.snappingMode = 1
+                self.removeToolBar()
+                self.addToolBar()
+            }
+        )
+        
+        let advancedAction = UIAction(
+            title: "Advanced_".translate(),
+            state: PersistentStorage.snappingMode == 2 ? .on : .off,
+            handler: { [weak self,weak engine] _ in
                 guard let engine = engine else { return }
-                // Handle "No" action
-//                engine.templateHandler.currentActionState.timelineShow = true
-//                engine.timelineView.isHidden = false
-                engine.templateHandler.currentActionState.timelineShow = true
-                print("Selected No")
-            })
+                guard let self = self else { return }
+                engine.templateHandler.currentActionState.snappingMode = .advanced
+                PersistentStorage.snappingMode = 2
+                self.removeToolBar()
+                self.addToolBar()
+            }
+        )
+        
+        let offAction = UIAction(
+            title: "Off_".translate(),
+            state: PersistentStorage.snappingMode == 0 ? .on : .off,
+            handler: { [weak self,weak engine] _ in
+                guard let engine = engine else { return }
+                guard let self = self else { return }
+                engine.templateHandler.currentActionState.snappingMode = .off
+                PersistentStorage.snappingMode = 0
+                self.removeToolBar()
+                self.addToolBar()
+            }
+        )
+        
+        let snap = UIMenu(title: "Snapping_".translate(), image: UIImage(systemName: "grid"), children: [basicAction, advancedAction, offAction])
+        
+        // Perform stop action
+        let hideAction = UIAction(title: "Hide_".translate(), handler: { [weak engine] _ in
+            guard let engine = engine else { return }
             
             
-            let timeline = UIMenu(title: "Timeline_".translate(), image: UIImage(systemName: "film"), children: [hideAction, showAction])
-            
-            
-            // Create menu with menu items
-//            let menu2 = UIMenu(title: "", children: [Layers, resizeAction, pages, UIMenuElement.separator(), multiSelect, timeline, snap])
+            //                print("Selected Yes")
+            //                engine.templateHandler.currentActionState.timelineHide = true
+            //                engine.timelineView.isHidden = true
+            engine.templateHandler.currentActionState.timelineShow = false
+        })
+        
+        let showAction = UIAction(title: "Show_".translate(), handler: { [weak engine] _ in
+            guard let engine = engine else { return }
+            // Handle "No" action
+            //                engine.templateHandler.currentActionState.timelineShow = true
+            //                engine.timelineView.isHidden = false
+            engine.templateHandler.currentActionState.timelineShow = true
+            print("Selected No")
+        })
+        
+        
+        let timeline = UIMenu(title: "Timeline_".translate(), image: UIImage(systemName: "film"), children: [hideAction, showAction])
+        
+        
+        // Create menu with menu items
+        //            let menu2 = UIMenu(title: "", children: [Layers, resizeAction, pages, UIMenuElement.separator(), multiSelect, timeline, snap])
         var menu2 = UIMenu(title: "", children: [
             UIMenu(title: "", options: .displayInline, children: [Layers, resizeAction]),
             UIMenu(title: "", options: .displayInline, children: [zoomEnable]),
             UIMenu(title: "", options: .displayInline, children: [preview]),
-//                UIMenu(title: "", options: .displayInline, children: [multiSelect]),
-//                UIMenu(title: "", options: .displayInline, children: [timeline]),
+            //                UIMenu(title: "", options: .displayInline, children: [multiSelect]),
+            //                UIMenu(title: "", options: .displayInline, children: [timeline]),
             UIMenu(title: "", options: .displayInline, children: [snap])
         ])
         guard let engine = engine else { return }
@@ -430,36 +451,41 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
                 UIMenu(title: "", options: .displayInline, children: [Layers]),
                 UIMenu(title: "", options: .displayInline, children: [zoomEnable]),
                 UIMenu(title: "", options: .displayInline, children: [preview]),
-                    UIMenu(title: "", options: .displayInline, children: [multiSelect]),
-    //                UIMenu(title: "", options: .displayInline, children: [timeline]),
+                UIMenu(title: "", options: .displayInline, children: [multiSelect]),
+                //                UIMenu(title: "", options: .displayInline, children: [timeline]),
                 UIMenu(title: "", options: .displayInline, children: [snap])
             ])
-                
+            
         } else {
             menu2 = UIMenu(title: "", children: [
                 UIMenu(title: "", options: .displayInline, children: [Layers, resizeAction]),
                 UIMenu(title: "", options: .displayInline, children: [zoomEnable]),
                 UIMenu(title: "", options: .displayInline, children: [preview]),
-                    UIMenu(title: "", options: .displayInline, children: [multiSelect]),
-                    UIMenu(title: "", options: .displayInline, children: [timeline]),
+                UIMenu(title: "", options: .displayInline, children: [multiSelect]),
+                UIMenu(title: "", options: .displayInline, children: [timeline]),
                 UIMenu(title: "", options: .displayInline, children: [snap])
             ])
-                
-        }
-           
-         
             
-            // Create UIBarButtonItem with the menu
-            var menuButton2 = UIBarButtonItem(title: "", image: UIImage(systemName: "ellipsis.circle"), primaryAction: nil, menu: menu2)
-            navigationItem.hidesBackButton = false
-            navigationItem.rightBarButtonItems = [exportButton!,redoButton!,undoButton!,menuButton2]
-           
-            if !undoRedoState{
-                undoButton?.isEnabled = false
-                redoButton?.isEnabled = false
-            }
-    
-}
+        }
+        
+        
+        
+        // Create UIBarButtonItem with the menu
+        var menuButton2 = UIBarButtonItem(title: "", image: UIImage(systemName: "ellipsis.circle"), primaryAction: nil, menu: menu2)
+        navigationItem.hidesBackButton = false
+        navigationItem.rightBarButtonItems = [exportButton!,redoButton!,undoButton!,menuButton2]
+        
+        if let nav = findVisibleNavigationController() {
+            nav.topViewController?.navigationItem.rightBarButtonItems = navigationItem.rightBarButtonItems
+            nav.topViewController?.navigationItem.leftBarButtonItems = navigationItem.leftBarButtonItems
+            nav.topViewController?.title = navigationItem.title
+        }
+        if !undoRedoState{
+            undoButton?.isEnabled = false
+            redoButton?.isEnabled = false
+        }
+        
+    }
     
    
   
@@ -510,7 +536,7 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
                 //           // UndoRedoManager.shared.clearStacks()
                 //            DataSourceRepository.shared.cleanUp()
                 //            print("back pressed on editor VC")
-                viewModel.dsStore.cleanUp()
+                viewModel?.dsStore.cleanUp()
                 
                 DispatchQueue.main.async {
                     Loader.stopLoader()
