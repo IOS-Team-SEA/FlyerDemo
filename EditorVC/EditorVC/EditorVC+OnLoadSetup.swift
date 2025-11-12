@@ -91,7 +91,8 @@ extension EditorVC {
 //                    self.addTimelineView()
                     if engine.viewManager == nil
                     {
-                        engine.viewManager = ViewManager(canvasView: editorView, logger: AppPackageLogger(), vmConfig: AppViewManagerConfigure())
+                        self.addViewManager(engine: engine, editorView: editorView)
+//                        engine.viewManager = ViewManager(canvasView: editorView, logger: AppPackageLogger(), vmConfig: AppViewManagerConfigure())
                         engine.prepareSceneUIView()
                         engine.viewManager?.editView?.gestureView.isAllGesturesEnabled = true
                     }
@@ -129,16 +130,17 @@ extension EditorVC {
                     self.view.bringSubviewToFront(containerView)
                 }
                 
-                self.hostingerMusic?.view.removeFromSuperview() // Remove the previous view if it exists
-                self.hostingerMusic = UIHostingController(rootView: MusicControlView(templateHandler: engine.templateHandler, playerVm: engine.templateHandler.playerControls!, actionStates: engine.templateHandler.currentActionState))
-                
-                let viewDummy = self.viewDummy
-                self.hostingerMusic?.view.frame = viewDummy.bounds
-                self.hostingerMusic?.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-                
-                if let hostingerMusic = self.hostingerMusic {
-                    viewDummy.addSubview(hostingerMusic.view)
-                }
+                self.addMusicControlView(engine: engine)
+//                self.hostingerMusic?.view.removeFromSuperview() // Remove the previous view if it exists
+//                self.hostingerMusic = UIHostingController(rootView: MusicControlView(templateHandler: engine.templateHandler, playerVm: engine.templateHandler.playerControls!, actionStates: engine.templateHandler.currentActionState))
+//                
+//                let viewDummy = self.viewDummy
+//                self.hostingerMusic?.view.frame = viewDummy.bounds
+//                self.hostingerMusic?.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+//                
+//                if let hostingerMusic = self.hostingerMusic {
+//                    viewDummy.addSubview(hostingerMusic.view)
+//                }
                 
                 if self.loadingState == .Preview{
                     engine.templateHandler.currentActionState.didMusicPlayOnEditor = false
@@ -146,21 +148,23 @@ extension EditorVC {
                 else{
                     engine.templateHandler.currentActionState.didMusicPlayOnEditor = true
                 }
-                self.muteHostingerController = UIHostingController(rootView: MuteControl(isMute: Binding(get: {
-                    engine.templateHandler.currentActionState.isMute
-                }, set: { newValue in
-                    engine.templateHandler.currentActionState.isMute = newValue
-                })))
                 
-                self.muteHostingerController.view.frame = CGRect(x: 10, y: 120, width: 40, height: 40)
-                self.muteHostingerController.view.backgroundColor = .clear
-                self.muteHostingerController.view.isHidden = true
-                
-                
-                if  let muteView = self.muteHostingerController.view {
-                    self.view.addSubview(muteView)
-                    self.view.bringSubviewToFront(muteView)
-                }
+                self.addMuteControls(engine: engine)
+//                self.muteHostingerController = UIHostingController(rootView: MuteControl(isMute: Binding(get: {
+//                    engine.templateHandler.currentActionState.isMute
+//                }, set: { newValue in
+//                    engine.templateHandler.currentActionState.isMute = newValue
+//                })))
+//                
+//                self.muteHostingerController.view.frame = CGRect(x: 10, y: 120, width: 40, height: 40)
+//                self.muteHostingerController.view.backgroundColor = .clear
+//                self.muteHostingerController.view.isHidden = true
+//                
+//                
+//                if  let muteView = self.muteHostingerController.view {
+//                    self.view.addSubview(muteView)
+//                    self.view.bringSubviewToFront(muteView)
+//                }
             } else if engine.templateHandler.currentTemplateInfo?.outputType == .Image  {
                 
 
@@ -186,6 +190,41 @@ extension EditorVC {
         }
     }
     
+    func addViewManager(engine: MetalEngine, editorView: EditorView){
+       
+        engine.viewManager = ViewManager(canvasView: editorView, logger: AppPackageLogger(), vmConfig: AppViewManagerConfigure(), toolbarConfig: ToolBarMiniViewManager(engine: engine))
+    }
+    
+    func addMusicControlView(engine: MetalEngine){
+        self.hostingerMusic?.view.removeFromSuperview() // Remove the previous view if it exists
+        self.hostingerMusic = UIHostingController(rootView: MusicControlView(templateHandler: engine.templateHandler, playerVm: engine.templateHandler.playerControls!, actionStates: engine.templateHandler.currentActionState))
+        
+        let viewDummy = self.viewDummy
+        self.hostingerMusic?.view.frame = viewDummy.bounds
+        self.hostingerMusic?.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        
+        if let hostingerMusic = self.hostingerMusic {
+            viewDummy.addSubview(hostingerMusic.view)
+        }
+    }
+    
+    func addMuteControls(engine: MetalEngine){
+        self.muteHostingerController = UIHostingController(rootView: MuteControl(isMute: Binding(get: {
+            engine.templateHandler.currentActionState.isMute
+        }, set: { newValue in
+            engine.templateHandler.currentActionState.isMute = newValue
+        })))
+        
+        self.muteHostingerController.view.frame = CGRect(x: 10, y: 120, width: 40, height: 40)
+        self.muteHostingerController.view.backgroundColor = .clear
+        self.muteHostingerController.view.isHidden = true
+        
+        
+        if  let muteView = self.muteHostingerController.view {
+            self.view.addSubview(muteView)
+            self.view.bringSubviewToFront(muteView)
+        }
+    }
     
     func relayoutViewForEdit2() {
         navTitle.text = "" //NK*
