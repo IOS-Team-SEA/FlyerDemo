@@ -6,14 +6,15 @@
 //
 
 import SwiftUI
+import IOS_CommonEditor
 
 struct ParentEditorVC: View {
     
     @ObservedObject var viewModel: EditorVM
     
-    init(templateId: Int = 239, thumbImage: UIImage = UIImage(systemName: "plus") ?? UIImage()) {
+    init(templateID: Int = 239, thumbImage: UIImage = UIImage(systemName: "plus") ?? UIImage()) {
         let resolver = Injection.shared.appLevelResolver
-        let resolvedVM = resolver.resolve(EditorVM.self, arguments: templateId, thumbImage)!
+        let resolvedVM = resolver.resolve(EditorVM.self, arguments: templateID, thumbImage)!
         self.viewModel = resolvedVM
     }
     

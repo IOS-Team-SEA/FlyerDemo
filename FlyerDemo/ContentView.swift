@@ -9,6 +9,9 @@ import SwiftUI
 import IOS_CommonEditor
 
 struct ContentView: View {
+    
+//    @State var templateInfo: TemplateInfo? = nil
+    
     var body: some View {
         VStack{
             Text("Welcome Screen")
@@ -19,7 +22,9 @@ struct ContentView: View {
             }
             .buttonStyle(.borderedProminent)
         }
-        
+//        .task {
+//            templateInfo = DBMediator.shared.fetchTemplate(tempID: 239, refSize: CGSize(width: 300, height: 300))
+//        }
     }
     
     private func pushParentEditorView() {
@@ -30,16 +35,17 @@ struct ContentView: View {
             print("❌ Navigation controller not found")
             return
         }
-        
-        // Create SwiftUI ParentEditorView
-        let parentEditorView = ParentEditorVC()
-        
-        // Wrap in a UIHostingController
-        let hostingVC = UIHostingController(rootView: parentEditorView)
-//        hostingVC.title = "Editor"
-        
-        // Push onto navigation controller
-        nav.pushViewController(hostingVC, animated: true)
+//        if let templateInfo = templateInfo{
+            // Create SwiftUI ParentEditorView
+            let parentEditorView = ParentEditorVC(/*templateInfo: templateInfo*/)
+            
+            // Wrap in a UIHostingController
+            let hostingVC = UIHostingController(rootView: parentEditorView)
+            //        hostingVC.title = "Editor"
+            
+            // Push onto navigation controller
+            nav.pushViewController(hostingVC, animated: true)
+//        }
     }
     
 }

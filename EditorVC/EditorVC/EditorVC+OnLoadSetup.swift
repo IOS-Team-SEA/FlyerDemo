@@ -34,7 +34,10 @@ extension EditorVC {
         }
         addPlayerControlView()
         Task {
+            
+            
             let didLoadScene = await engine!.prepareScene2(templateID: self.currentTemplateID, refSize: BASE_SIZE, loadThumbnails: loadingState == .Edit ? true : false)
+            
             if didLoadScene {
                 logInfo("DD_STARTED RENDERING", didLoadScene)
 //                createContainerView()
@@ -47,6 +50,7 @@ extension EditorVC {
     }
     
     
+    
     func onSceneLoad() {
         DispatchQueue.main.async { [weak self , weak engine , weak editorView ] in
            
@@ -56,7 +60,7 @@ extension EditorVC {
             guard let engine = engine else { return }
             guard let editorView = editorView else { return }
             
-            setupControlPanelManager()
+//            setupControlPanelManager()
             createContainerView()
             controlPanelManager?.addSwiftUIOpacityView()
             
@@ -81,11 +85,14 @@ extension EditorVC {
                 }
             logInfo("Loading State -> \(self.loadingState)")
                 if (self.loadingState == .Edit && self.loadingStaus){
+                    self.addTimelineView()
+                    self.timelineView?.setTemplateHandler(templateHandler: engine.templateHandler)
+                    
                     if engine.templateHandler.currentTemplateInfo?.outputType == .Video {
-                        self.addTimelineView()
-                        self.timelineView?.setTemplateHandler(templateHandler: engine.templateHandler)
+                        timelineView?.showTimeline()
 
                     } else {
+                        timelineView?.hideTimelines()
                         // add MockUP View here in future
                     }
 //                    self.addTimelineView()
@@ -111,7 +118,7 @@ extension EditorVC {
 //                if self.loadingState == .Edit{
 //                    engine.templateHandler.currentActionState.didMusicPlayOnEditor = true
 //                }
-            if engine.templateHandler.currentTemplateInfo?.outputType == .Video {
+//            if engine.templateHandler.currentTemplateInfo?.outputType == .Video {
 
                 for subview in viewDummy.subviews {
                     subview.removeFromSuperview()
@@ -165,8 +172,11 @@ extension EditorVC {
 //                    self.view.addSubview(muteView)
 //                    self.view.bringSubviewToFront(muteView)
 //                }
+            
+            if engine.templateHandler.currentTemplateInfo?.outputType == .Video {
+                self.showMusicControlView()
             } else if engine.templateHandler.currentTemplateInfo?.outputType == .Image  {
-                
+                self.hideMusicControlView()
 
                 
             }
@@ -188,6 +198,14 @@ extension EditorVC {
             
             
         }
+    }
+    
+    func showMusicControlView(){
+        self.viewDummy.isHidden = false
+    }
+    
+    func hideMusicControlView(){
+        self.viewDummy.isHidden = true
     }
     
     func addViewManager(engine: MetalEngine, editorView: EditorView){
@@ -346,28 +364,28 @@ extension EditorVC {
    }
     
     
-    func resizeViewForEdit2(templateId : Int) {
-        self.navigationItem.hidesBackButton = false
-           
-          
-            navTitle.text = ""
-        if loadingState == .Preview{
-            loadingStaus = true
-            loadingState = .Edit
-            setEditorView()
-            Task {
-                let didLoadScene = await engine!.prepareScene2(templateID: templateId, refSize: BASE_SIZE, loadThumbnails: true)
-                if didLoadScene {
-                    print("DD_STARTED RENDERING", didLoadScene)
-                    self.observeCurrentActions()
-                    self.observeEditorAction()
-                    self.controlPanelManager?.observeControlManager()
-                    onSceneLoad()
-                    
-                }
-            }
-        }
-   }
+//    func resizeViewForEdit2(templateId : Int) {
+//        self.navigationItem.hidesBackButton = false
+//           
+//          
+//            navTitle.text = ""
+//        if loadingState == .Preview{
+//            loadingStaus = true
+//            loadingState = .Edit
+//            setEditorView()
+//            Task {
+//                let didLoadScene = await engine!.prepareScene2(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: true)
+//                if didLoadScene {
+//                    print("DD_STARTED RENDERING", didLoadScene)
+//                    self.observeCurrentActions()
+//                    self.observeEditorAction()
+//                    self.controlPanelManager?.observeControlManager()
+//                    onSceneLoad()
+//                    
+//                }
+//            }
+//        }
+//   }
 
     
     func relayoutViewForPreview2(){

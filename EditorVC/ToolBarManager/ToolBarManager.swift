@@ -11,13 +11,17 @@ import SwiftUI
 
 class ToolBarMiniViewManager : ToolBarIntegrator {
     
-    var engine: MetalEngine
+    weak var engine: MetalEngine?
     
-    init(engine:MetalEngine) {
+    init(engine: MetalEngine) {
         self.engine = engine
     }
     
     func getEasyToolBar() -> any View {
+        guard let engine = engine else {
+            logError("engine nil inside tool bar manager")
+            return EmptyView()
+        }
         let view = EasyToolBar()
             .environmentObject(engine.templateHandler!)
             .environment(\.sizeCategory, .medium)

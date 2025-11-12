@@ -111,7 +111,17 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
      var redoButton:UIBarButtonItem?
      var exportButton:UIBarButtonItem?
      
-    
+    // menu button
+    var resizeAction: UIAction?
+    var layersAction: UIAction?
+    var convertToImage: UIAction?
+    var zoomEnable: UIAction?
+    var previewAction: UIAction?
+    var pagesAction: UIAction?
+    var snapAction: UIMenu?
+    var timelineAction: UIMenu?
+    var multiSelectAction: UIAction?
+    var mainMenu: UIBarButtonItem?
     
     var group: UIBarButtonItem?
     var cancel: UIBarButtonItem?
@@ -119,6 +129,7 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
     //var viewManager : UISceneViewManager? = UISceneViewManager()
     
     internal var currentTemplateID:Int
+//    internal var currentTemplateInfo: TemplateInfo
     
     var useMeButton : UIButton!
     var loadingState : EditorLoadingState = .Edit
@@ -137,6 +148,7 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
     
     init(viewModel: EditorVM){
         self.viewModel = viewModel
+//        self.currentTemplateInfo = viewModel.templateInfo
         currentTemplateID = viewModel.templateId
         self.thumbImage = viewModel.thumbImage
         super.init(nibName: "EditorVC", bundle: nil)
@@ -180,6 +192,7 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
         navigationController?.navigationBar.backgroundColor = UIColor.systemBackground//UIColor(named: "editorBG")!
         
 //        setEditorView()
+        setupControlPanelManager()
         setViewsNLoadTemplate2()
         
         observeUndoRedoCount()
@@ -302,7 +315,7 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
         
         exportButton = UIBarButtonItem(image: UIImage(systemName: "checkmark"), style: .plain, target: self, action: #selector(exportAction))
         
-        let multiSelect = UIAction(title: "Multi_Select".translate(), image: UIImage(systemName: "square.on.square.dashed"), handler: { [weak engine] _ in
+        multiSelectAction = UIAction(title: "Multi_Select".translate(), image: UIImage(systemName: "square.on.square.dashed"), handler: { [weak engine] _ in
             guard let engine = engine else { return }
             // Perform play action
             //            hostingerController?.rootView = AnyView(ParentContainer(currentModel: ParentInfo(), actionStates: self.engine.templateHandler.actionStates, delegate: self))
@@ -311,7 +324,7 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
         })
         
         
-        let resizeAction = UIAction(title: "Resize_".translate(), image: UIImage(systemName: "square.resize"), handler: { [weak self,weak engine] _ in
+        resizeAction = UIAction(title: "Resize_".translate(), image: UIImage(systemName: "square.resize"), handler: { [weak self,weak engine] _ in
             guard let engine = engine else { return }
             guard let self = self else { return }
             
@@ -321,7 +334,7 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
             }, createNewTapped: false).environmentObject(UIStateManager.shared).environment(\.sizeCategory, .medium)), animated: true)
             
         })
-        let Layers = UIAction(title: "Layers_".translate(), image: UIImage(systemName: "square.3.layers.3d"), handler: { [weak self,weak engine] _ in
+        layersAction = UIAction(title: "Layers_".translate(), image: UIImage(systemName: "square.3.layers.3d"), handler: { [weak self,weak engine] _ in
             guard let engine = engine else { return }
             guard let self = self else { return }
             
@@ -336,15 +349,20 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
             }
         })
         
+        convertToImage = UIAction(title: "Convert to Video".translate(), image: UIImage(systemName: "square.3.layers.3d"), handler: { [weak engine] _ in
+            guard let engine = engine else { return }
+            engine.templateHandler.currentTemplateInfo?.outputType = .Video
+        })
+        
         /* Neeshu Chnage For Zoom Control Enable*/
         
-        let zoomEnable = UIAction(title: "Zoom_Enable".translate(), image: UIImage(systemName: "square.arrowtriangle.4.outward")) {
+        zoomEnable = UIAction(title: "Zoom_Enable".translate(), image: UIImage(systemName: "square.arrowtriangle.4.outward")) {
             [weak engine] _ in
             guard let engine = engine else { return }
             engine.templateHandler.currentActionState.zoomEnable.toggle()
         }
         
-        let preview = UIAction(title: "Preview_".translate()) {  [weak engine] _ in
+        previewAction = UIAction(title: "Preview_".translate()) {  [weak engine] _ in
             guard let engine = engine else { return }
             
             engine.templateHandler.currentActionState.didPreviewTapped = true
@@ -352,7 +370,7 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
         }
         
         
-        let pages = UIAction(title: "Pages_".translate(), image: UIImage(systemName: "doc"), handler: { [weak self,weak engine] _ in
+        pagesAction = UIAction(title: "Pages_".translate(), image: UIImage(systemName: "doc"), handler: { [weak self,weak engine] _ in
             guard let engine = engine else { return }
             guard let self = self else { return }
             guard let templateHandler = engine.templateHandler else { return }
@@ -409,7 +427,7 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
             }
         )
         
-        let snap = UIMenu(title: "Snapping_".translate(), image: UIImage(systemName: "grid"), children: [basicAction, advancedAction, offAction])
+        snapAction = UIMenu(title: "Snapping_".translate(), image: UIImage(systemName: "grid"), children: [basicAction, advancedAction, offAction])
         
         // Perform stop action
         let hideAction = UIAction(title: "Hide_".translate(), handler: { [weak engine] _ in
@@ -432,38 +450,38 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
         })
         
         
-        let timeline = UIMenu(title: "Timeline_".translate(), image: UIImage(systemName: "film"), children: [hideAction, showAction])
+        timelineAction = UIMenu(title: "Timeline_".translate(), image: UIImage(systemName: "film"), children: [hideAction, showAction])
         
         
         // Create menu with menu items
         //            let menu2 = UIMenu(title: "", children: [Layers, resizeAction, pages, UIMenuElement.separator(), multiSelect, timeline, snap])
         var menu2 = UIMenu(title: "", children: [
-            UIMenu(title: "", options: .displayInline, children: [Layers, resizeAction]),
-            UIMenu(title: "", options: .displayInline, children: [zoomEnable]),
-            UIMenu(title: "", options: .displayInline, children: [preview]),
+            UIMenu(title: "", options: .displayInline, children: [layersAction!, resizeAction!]),
+            UIMenu(title: "", options: .displayInline, children: [zoomEnable!]),
+            UIMenu(title: "", options: .displayInline, children: [previewAction!]),
             //                UIMenu(title: "", options: .displayInline, children: [multiSelect]),
             //                UIMenu(title: "", options: .displayInline, children: [timeline]),
-            UIMenu(title: "", options: .displayInline, children: [snap])
+            UIMenu(title: "", options: .displayInline, children: [snapAction!])
         ])
         guard let engine = engine else { return }
         if engine.templateHandler.currentTemplateInfo?.outputType == .Image {
             menu2 = UIMenu(title: "", children: [
-                UIMenu(title: "", options: .displayInline, children: [Layers]),
-                UIMenu(title: "", options: .displayInline, children: [zoomEnable]),
-                UIMenu(title: "", options: .displayInline, children: [preview]),
-                UIMenu(title: "", options: .displayInline, children: [multiSelect]),
+                UIMenu(title: "", options: .displayInline, children: [layersAction!, convertToImage!]),
+                UIMenu(title: "", options: .displayInline, children: [zoomEnable!]),
+                UIMenu(title: "", options: .displayInline, children: [previewAction!]),
+                UIMenu(title: "", options: .displayInline, children: [multiSelectAction!]),
                 //                UIMenu(title: "", options: .displayInline, children: [timeline]),
-                UIMenu(title: "", options: .displayInline, children: [snap])
+                UIMenu(title: "", options: .displayInline, children: [snapAction!])
             ])
             
         } else {
             menu2 = UIMenu(title: "", children: [
-                UIMenu(title: "", options: .displayInline, children: [Layers, resizeAction]),
-                UIMenu(title: "", options: .displayInline, children: [zoomEnable]),
-                UIMenu(title: "", options: .displayInline, children: [preview]),
-                UIMenu(title: "", options: .displayInline, children: [multiSelect]),
-                UIMenu(title: "", options: .displayInline, children: [timeline]),
-                UIMenu(title: "", options: .displayInline, children: [snap])
+                UIMenu(title: "", options: .displayInline, children: [layersAction!, resizeAction!]),
+                UIMenu(title: "", options: .displayInline, children: [zoomEnable!]),
+                UIMenu(title: "", options: .displayInline, children: [previewAction!]),
+                UIMenu(title: "", options: .displayInline, children: [multiSelectAction!]),
+                UIMenu(title: "", options: .displayInline, children: [timelineAction!]),
+                UIMenu(title: "", options: .displayInline, children: [snapAction!])
             ])
             
         }
@@ -471,9 +489,9 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
         
         
         // Create UIBarButtonItem with the menu
-        var menuButton2 = UIBarButtonItem(title: "", image: UIImage(systemName: "ellipsis.circle"), primaryAction: nil, menu: menu2)
+        mainMenu = UIBarButtonItem(title: "", image: UIImage(systemName: "ellipsis.circle"), primaryAction: nil, menu: menu2)
         navigationItem.hidesBackButton = false
-        navigationItem.rightBarButtonItems = [exportButton!,redoButton!,undoButton!,menuButton2]
+        navigationItem.rightBarButtonItems = [exportButton!,redoButton!,undoButton!,mainMenu!]
         
         if let nav = findVisibleNavigationController() {
             nav.topViewController?.navigationItem.rightBarButtonItems = navigationItem.rightBarButtonItems
@@ -487,7 +505,43 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
         
     }
     
+    func showImageNavigationBar(){
+        var menu2 = UIMenu(title: "", children: [
+            UIMenu(title: "", options: .displayInline, children: [layersAction!, convertToImage!]),
+            UIMenu(title: "", options: .displayInline, children: [zoomEnable!]),
+            UIMenu(title: "", options: .displayInline, children: [previewAction!]),
+            UIMenu(title: "", options: .displayInline, children: [multiSelectAction!]),
+            //                UIMenu(title: "", options: .displayInline, children: [timeline]),
+            UIMenu(title: "", options: .displayInline, children: [snapAction!])
+        ])
+        mainMenu = UIBarButtonItem(title: "", image: UIImage(systemName: "ellipsis.circle"), primaryAction: nil, menu: menu2)
+        navigationItem.rightBarButtonItems = [exportButton!,redoButton!,undoButton!,mainMenu!]
+        
+        if let nav = findVisibleNavigationController() {
+            nav.topViewController?.navigationItem.rightBarButtonItems = navigationItem.rightBarButtonItems
+            nav.topViewController?.navigationItem.leftBarButtonItems = navigationItem.leftBarButtonItems
+            nav.topViewController?.title = navigationItem.title
+        }
+    }
    
+    func showVideoNavigationBar(){
+        var menu2 = UIMenu(title: "", children: [
+            UIMenu(title: "", options: .displayInline, children: [layersAction!, resizeAction!]),
+            UIMenu(title: "", options: .displayInline, children: [zoomEnable!]),
+            UIMenu(title: "", options: .displayInline, children: [previewAction!]),
+            UIMenu(title: "", options: .displayInline, children: [multiSelectAction!]),
+            UIMenu(title: "", options: .displayInline, children: [timelineAction!]),
+            UIMenu(title: "", options: .displayInline, children: [snapAction!])
+        ])
+        mainMenu = UIBarButtonItem(title: "", image: UIImage(systemName: "ellipsis.circle"), primaryAction: nil, menu: menu2)
+        navigationItem.rightBarButtonItems = [exportButton!,redoButton!,undoButton!,mainMenu!]
+        
+        if let nav = findVisibleNavigationController() {
+            nav.topViewController?.navigationItem.rightBarButtonItems = navigationItem.rightBarButtonItems
+            nav.topViewController?.navigationItem.leftBarButtonItems = navigationItem.leftBarButtonItems
+            nav.topViewController?.title = navigationItem.title
+        }
+    }
   
    
     func onBackPressed() {

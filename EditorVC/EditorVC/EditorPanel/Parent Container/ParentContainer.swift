@@ -10,6 +10,7 @@ import IOS_CommonEditor
 
 struct ParentContainer: View {
     /* Model for Parent */
+    @Binding var outputType: OutputType
     @ObservedObject var currentModel : ParentModel
     @ObservedObject var actionStates: ActionStates
     @ObservedObject var cpm : ControlPanelManager
@@ -88,7 +89,7 @@ struct ParentContainer: View {
                     }
                 
             }else{
-                ParentContainerTabbar(didLayersTabClicked: $didLayersTabClicked, didNudgeTabClicked: $didNudgeTabClicked, didTransformTabClicked: $didTransformTabClicked, didOpacityTabClicked: $didOpacityTabClicked, didAnimationTabClicked: $didAnimationTabClicked, didDeleteTabClicked: $currentModel.softDelete, didCopyTabClicked: $didCopyTabClicked, didDuplicateTabClicked: $didDuplicateTabClicked, didPasteTabClicked: $didPasteTabClicked, didLockUnclockTabClicked: $currentModel.lockStatus, didUngroupTabClicked: $actionStates.didUngroupTapped, didEditTabClicked: $currentModel.editState, didGroupTabClicked: $didGroupTabClicked, didShowDurationButtonCliked: $cpm.didShowDurationButtonCliked,lastSelectedTab: $actionStates.lastSelectedTextTab, didCloseButtonTapped: $cpm.didCloseTabbarTapped, showPanel: $showPanel, isCurrentModelDeleted: $actionStates.isCurrentModelDeleted, shouldRefreshOnAddComponent: $actionStates.shouldRefreshOnAddComponent, delegate: delegate).frame(height: containerDefaultHeight)
+                ParentContainerTabbar(templateType: $outputType, didLayersTabClicked: $didLayersTabClicked, didNudgeTabClicked: $didNudgeTabClicked, didTransformTabClicked: $didTransformTabClicked, didOpacityTabClicked: $didOpacityTabClicked, didAnimationTabClicked: $didAnimationTabClicked, didDeleteTabClicked: $currentModel.softDelete, didCopyTabClicked: $didCopyTabClicked, didDuplicateTabClicked: $didDuplicateTabClicked, didPasteTabClicked: $didPasteTabClicked, didLockUnclockTabClicked: $currentModel.lockStatus, didUngroupTabClicked: $actionStates.didUngroupTapped, didEditTabClicked: $currentModel.editState, didGroupTabClicked: $didGroupTabClicked, didShowDurationButtonCliked: $cpm.didShowDurationButtonCliked,lastSelectedTab: $actionStates.lastSelectedTextTab, didCloseButtonTapped: $cpm.didCloseTabbarTapped, showPanel: $showPanel, isCurrentModelDeleted: $actionStates.isCurrentModelDeleted, shouldRefreshOnAddComponent: $actionStates.shouldRefreshOnAddComponent, delegate: delegate).frame(height: containerDefaultHeight)
 //                    .padding(.bottom, bottomPadding)
                     .frame(maxWidth: tabbarWidth)
                     .frame(height: tabbarHeight)

@@ -186,7 +186,7 @@ extension EditorVC {
                  engine.templateHandler.currentActionState.timelineShow = true
                 
              }
-         }.store(in: &editorVMCancellables)
+         }.store(in: &actionStateCancellables)
          
          UIStateManager.shared.$isPremium.sink {[weak self] isPremium in
              guard let self = self else { return }
@@ -197,6 +197,19 @@ extension EditorVC {
              engine.viewManager?.canRenderWatermark(!(isPremium || template.isThisTemplateBought))
                  
          }.store(in: &playerControlsCancellables)
+         
+         templateHandler.currentTemplateInfo?.$outputType.dropFirst().sink { [weak self] output in
+             guard let self = self else { return }
+             if output == .Video{
+                 timelineView?.showTimeline()
+                 self.showMusicControlView()
+                 self.showVideoNavigationBar()
+             }else if output == .Image{
+                 timelineView?.hideTimelines()
+                 self.hideMusicControlView()
+                 self.showImageNavigationBar()
+             }
+         }.store(in: &actionStateCancellables)
     }
     
     func findVisibleNavigationController() -> UINavigationController? {

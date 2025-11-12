@@ -36,6 +36,7 @@ class EditorVM: ObservableObject{
     var metalEngine : MetalEngine?
     var thumbImage: UIImage
     var templateId: Int
+//    var templateInfo: TemplateInfo
     @MainActor var dsStore = DataSourceStore()
 
 //    @Published public var didPreviewTapped: Bool = false
@@ -54,6 +55,13 @@ class EditorVM: ObservableObject{
         metalEngine = MetalEngine(logger: AppPackageLogger(), resourceProvider: AppResourceProvider(), engineConfig: AppEngineConfigure(), sceneConfig: AppSceneConfigure(), layerConfig: AppLayersConfigure(), vmConfig: AppViewManagerConfigure())
      
     }
+    
+//    init(templateInfo: TemplateInfo, thumbImage: UIImage){
+//        self.templateInfo = templateInfo
+//        self.thumbImage = thumbImage
+//        printLog("init \(self)")
+//        metalEngine = MetalEngine(logger: AppPackageLogger(), resourceProvider: AppResourceProvider(), engineConfig: AppEngineConfigure(), sceneConfig: AppSceneConfigure(), layerConfig: AppLayersConfigure(), vmConfig: AppViewManagerConfigure())
+//    }
     //MARK: - Methods
     
 //    func prepareScene(id:Int , refSize:CGSize) {

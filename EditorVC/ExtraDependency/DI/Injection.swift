@@ -49,8 +49,8 @@ final class Injection {
            
         }.inObjectScope(.transient)
 
-        container.register(EditorVM.self) { (_, templateId: Int, thumbImage: UIImage) in
-            EditorVM(templateId: templateId, thumbImage: thumbImage)
+        container.register(EditorVM.self) { (_, /*templateInfo: TemplateInfo*/templateID: Int, thumbImage: UIImage) in
+            EditorVM(templateId: templateID, thumbImage: thumbImage)
         }
         .inObjectScope(.transient)
         

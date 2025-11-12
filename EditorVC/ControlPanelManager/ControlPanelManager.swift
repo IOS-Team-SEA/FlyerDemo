@@ -120,7 +120,7 @@ class ControlPanelManager: ObservableObject{
         if currentModel is StickerInfo {
             controlPanel = AnyView(
                 StickerContainer(
-                    currentModel: engine.templateHandler.currentStickerModel!,
+                    outputType: Binding.constant(engine.templateHandler.currentTemplateInfo!.outputType), currentModel: engine.templateHandler.currentStickerModel!,
                     currentActionModel: engine.templateHandler.currentActionState,
                     cpm: self,
                     delegate: editorVC
@@ -131,7 +131,7 @@ class ControlPanelManager: ObservableObject{
         else if currentModel is TextInfo {
             controlPanel = AnyView(
                 TextContainer(
-                    currentModel: engine.templateHandler.currentTextModel!,
+                    outputType: Binding.constant(engine.templateHandler.currentTemplateInfo!.outputType), currentModel: engine.templateHandler.currentTextModel!,
                     currentActionModel: engine.templateHandler.currentActionState,
                     cpm: self,
                     delegate: editorVC
@@ -142,7 +142,7 @@ class ControlPanelManager: ObservableObject{
         else if currentModel is ParentInfo {
             controlPanel = AnyView(
                 ParentContainer(
-                    currentModel: engine.templateHandler.currentParentModel!,
+                    outputType: Binding.constant(engine.templateHandler.currentTemplateInfo!.outputType), currentModel: engine.templateHandler.currentParentModel!,
                     actionStates: engine.templateHandler.currentActionState,
                     cpm: self,
                     delegate: editorVC,

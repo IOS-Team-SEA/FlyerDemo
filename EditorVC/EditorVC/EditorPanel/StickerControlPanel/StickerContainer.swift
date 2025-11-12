@@ -9,6 +9,7 @@ import SwiftUI
 import IOS_CommonEditor
 
 struct StickerContainer: View {
+    @Binding var outputType: OutputType
     // Sticker Info Contain the data like transform position and color.
     @ObservedObject var currentModel : StickerInfo
 //    @State var animTempalate: [DBAnimationTemplateModel] = []
@@ -88,7 +89,7 @@ struct StickerContainer: View {
                 Spacer()
             }
             
-            StcikerContainreTabBar(didReplaceTabClicked: $didReplaceTabClicked, didColorTabClicked: $didColorTabClicked, didHueTabClicked: $didHueTabClicked, didNudgeTabClicked: $didNudgeTabClicked, didCropTabClicked: $didCropTabClicked, didTransformTabClicked: $didTransformTabClicked, didOpacityTabClicked: $didOpacityTabClicked, didPositionTabClicked: $didPositionTabClicked, didAnimationTabClicked: $didAnimationTabClicked, didDeleteTabClicked: $currentModel.softDelete, didCopyTabClicked: $didCopyTabClicked, didDuplicateTabClicked: $didDuplicateTabClicked, didPasteTabClicked: $didPasteTabClicked, didLockUnclockTabClicked: $currentModel.lockStatus, didGroupTabClicked: $didGroupTabClicked, didUngroupTabClicked: $didUngroupTabClicked, didShowDurationButtonCliked: $cpm.didShowDurationButtonCliked,lastSelectedTab: $currentActionModel.lastSelectedTextTab, didCloseButtonTapped: $cpm.didCloseTabbarTapped, showPanel: $showPanel, isCurrentModelDeleted: $currentActionModel.isCurrentModelDeleted, shouldRefreshOnAddComponent: $currentActionModel.shouldRefreshOnAddComponent, delegate: delegate, didFilterAdjustmentClicked: $didFilterAdjustmentClicked, didColorAdjustmentClicked: $didColorAdjustmentClicked).frame(height: containerDefaultHeight)
+            StcikerContainreTabBar(templateType: $outputType, didReplaceTabClicked: $didReplaceTabClicked, didColorTabClicked: $didColorTabClicked, didHueTabClicked: $didHueTabClicked, didNudgeTabClicked: $didNudgeTabClicked, didCropTabClicked: $didCropTabClicked, didTransformTabClicked: $didTransformTabClicked, didOpacityTabClicked: $didOpacityTabClicked, didPositionTabClicked: $didPositionTabClicked, didAnimationTabClicked: $didAnimationTabClicked, didDeleteTabClicked: $currentModel.softDelete, didCopyTabClicked: $didCopyTabClicked, didDuplicateTabClicked: $didDuplicateTabClicked, didPasteTabClicked: $didPasteTabClicked, didLockUnclockTabClicked: $currentModel.lockStatus, didGroupTabClicked: $didGroupTabClicked, didUngroupTabClicked: $didUngroupTabClicked, didShowDurationButtonCliked: $cpm.didShowDurationButtonCliked,lastSelectedTab: $currentActionModel.lastSelectedTextTab, didCloseButtonTapped: $cpm.didCloseTabbarTapped, showPanel: $showPanel, isCurrentModelDeleted: $currentActionModel.isCurrentModelDeleted, shouldRefreshOnAddComponent: $currentActionModel.shouldRefreshOnAddComponent, delegate: delegate, didFilterAdjustmentClicked: $didFilterAdjustmentClicked, didColorAdjustmentClicked: $didColorAdjustmentClicked).frame(height: containerDefaultHeight)
                 .frame(maxWidth: tabbarWidth)
                 .frame(height: tabbarHeight)
 //                .padding(.bottom, bottomPadding)
