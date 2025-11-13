@@ -10,7 +10,7 @@ import IOS_CommonEditor
 
 struct ContentView: View {
     
-//    @State var templateInfo: TemplateInfo? = nil
+    @State var templateInfo: TemplateInfo? = nil
     
     var body: some View {
         VStack{
@@ -22,9 +22,9 @@ struct ContentView: View {
             }
             .buttonStyle(.borderedProminent)
         }
-//        .task {
-//            templateInfo = DBMediator.shared.fetchTemplate(tempID: 239, refSize: CGSize(width: 300, height: 300))
-//        }
+        .task {
+            templateInfo = DBMediator.shared.fetchTemplate(tempID: 239, refSize: CGSize(width: 300, height: 300))
+        }
     }
     
     private func pushParentEditorView() {
@@ -35,9 +35,9 @@ struct ContentView: View {
             print("❌ Navigation controller not found")
             return
         }
-//        if let templateInfo = templateInfo{
+        if let templateInfo = templateInfo{
             // Create SwiftUI ParentEditorView
-            let parentEditorView = ParentEditorVC(/*templateInfo: templateInfo*/)
+            let parentEditorView = ParentEditorVC(templateInfo: templateInfo)
             
             // Wrap in a UIHostingController
             let hostingVC = UIHostingController(rootView: parentEditorView)
@@ -45,7 +45,7 @@ struct ContentView: View {
             
             // Push onto navigation controller
             nav.pushViewController(hostingVC, animated: true)
-//        }
+        }
     }
     
 }

@@ -36,7 +36,7 @@ extension EditorVC {
         Task {
             
             
-            let didLoadScene = await engine!.prepareScene2(templateID: self.currentTemplateID, refSize: BASE_SIZE, loadThumbnails: loadingState == .Edit ? true : false)
+            let didLoadScene = await engine!.prepareScene2(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: loadingState == .Edit ? true : false)
             
             if didLoadScene {
                 logInfo("DD_STARTED RENDERING", didLoadScene)
@@ -273,7 +273,7 @@ extension EditorVC {
             _ = DBManager.shared.updateTemplateUpdatedDate(templateId: currentTemplateID, newValue: updatedAtString)
            
             Task {
-                let didLoadScene = await engine!.prepareScene2(templateID: self.currentTemplateID, refSize: BASE_SIZE, loadThumbnails: true)
+                let didLoadScene = await engine!.prepareScene2(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: true)
                 if didLoadScene {
                     print("DD_STARTED RENDERING", didLoadScene)
 //                    self.observeCurrentActions()
@@ -349,7 +349,7 @@ extension EditorVC {
             loadingState = .Edit
             setEditorView()
             Task {
-                let didLoadScene = await engine!.prepareScene2(templateID: self.currentTemplateID, refSize: BASE_SIZE, loadThumbnails: true)
+                let didLoadScene = await engine!.prepareScene2(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: true)
                 if didLoadScene {
                     print("DD_STARTED RENDERING", didLoadScene)
                     engine?.viewManager?.editView?.gestureView.isAllGesturesEnabled = true
@@ -408,7 +408,7 @@ extension EditorVC {
        
 
         Task {
-            let didLoadScene = await engine.prepareScene2(templateID: self.currentTemplateID, refSize: BASE_SIZE, loadThumbnails: true)
+            let didLoadScene = await engine.prepareScene2(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: true)
             if didLoadScene {
                 print("DD_STARTED RENDERING", didLoadScene)
                
@@ -463,7 +463,7 @@ extension EditorVC {
         navTitle.text = "Preview_".translate()
         
         Task {
-            let didLoadScene = await engine.prepareScene2(templateID: self.currentTemplateID, refSize: BASE_SIZE, loadThumbnails: true)
+            let didLoadScene = await engine.prepareScene2(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: true)
             if didLoadScene {
                 print("DD_STARTED RENDERING", didLoadScene)
 //                    self.observeCurrentActions()

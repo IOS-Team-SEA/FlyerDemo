@@ -129,7 +129,7 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
     //var viewManager : UISceneViewManager? = UISceneViewManager()
     
     internal var currentTemplateID:Int
-//    internal var currentTemplateInfo: TemplateInfo
+    internal var currentTemplateInfo: TemplateInfo
     
     var useMeButton : UIButton!
     var loadingState : EditorLoadingState = .Edit
@@ -148,8 +148,8 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
     
     init(viewModel: EditorVM){
         self.viewModel = viewModel
-//        self.currentTemplateInfo = viewModel.templateInfo
-        currentTemplateID = viewModel.templateId
+        self.currentTemplateInfo = viewModel.templateInfo
+        currentTemplateID = viewModel.templateInfo.templateId
         self.thumbImage = viewModel.thumbImage
         super.init(nibName: "EditorVC", bundle: nil)
     }
