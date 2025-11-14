@@ -150,6 +150,7 @@ extension Injection {
             return nil  // Return nil if the ViewModel could not be resolved
         }
     }
+    
     func inject<T: AnyObject>(id: String, type: T.Type , dictArgument: [String:String] ) -> T? {
        
        
@@ -169,45 +170,49 @@ extension Injection {
         }
     }
     
+    func inject<T: AnyObject>(id: String, type: T.Type , argumentA: Any? = nil, argumentB: Any? = nil ) -> T? {
+       
+       
+        // Check if the ViewModel is already cached as a weak reference
+        if let weakViewModel = viewModels[id] as? Weak<T>, let viewModel = weakViewModel.value {
+            return viewModel  // Return the cached ViewModel if it exists
+        } else {
+            // Resolve a new instance from the container with the argument (id)
+            if let templateInfo = argumentA as? TemplateInfo,
+               let thumbImage = argumentB as? UIImage,
+               let viewModel = appLevelResolver.resolve(T.self, arguments: templateInfo, thumbImage) {
+                viewModels[id] = Weak(value: viewModel)
+                return viewModel
+            }
+            
+            if let argA = argumentA {
+                if let intArg = argA as? Int,
+                   let viewModel = appLevelResolver.resolve(T.self, argument: intArg) {
+                    viewModels[id] = Weak(value: viewModel)
+                    return viewModel
+                } else if let dictArg = argA as? [String: String],
+                          let viewModel = appLevelResolver.resolve(T.self, argument: dictArg) {
+                    viewModels[id] = Weak(value: viewModel)
+                    return viewModel
+                } else if let viewModel = appLevelResolver.resolve(T.self, argument: argA) {
+                    viewModels[id] = Weak(value: viewModel)
+                    return viewModel
+                }
+            }
+            
+            if let viewModel = appLevelResolver.resolve(T.self) {
+                viewModels[id] = Weak(value: viewModel)
+                return viewModel
+            }
+            return nil  // Return nil if the ViewModel could not be resolved
+        }
+    }
+    
     func remove(id: String) {
         viewModels.removeValue(forKey: id)
     }
     
-    
-    
-//    func injectSearchVieModel(id:String,type:SearchResultViewModel , searchKey:String) -> SearchResultViewModel? {
-//        // Check if the ViewModel is already cached as a weak reference
-//        if let weakViewModel = viewModels[id] as? Weak<T>, let viewModel = weakViewModel.value {
-//            return viewModel  // Return the cached ViewModel if it exists
-//        } else {
-//            
-//        }
-//    }
-//    func injectSearchVieModel(type:SearchResultViewModel.Type , searchValue: String, filters: [String: String]?,commonFilter:[String:String]? = nil) -> SearchResultViewModel? {
-//        // Check if the ViewModel is already cached as a weak reference
-////        if let weakViewModel = viewModels[searchValue] as? Weak<SearchResultViewModel>, let viewModel = weakViewModel.value {
-////            return viewModel  // Return the cached ViewModel if it exists
-////        } else {
-//            if let viewModel = appLevelContainer.resolve(SearchResultViewModel.self, arguments: searchValue, filters, commonFilter) {
-//                viewModels[searchValue] = Weak(value: viewModel)
-//                return viewModel
-//            }
-////        }
-//        return nil
-//    }
-    
-//    func injectSearchVieModel(id:String,type:SearchResultViewModel.Type , filters: [String: String],commonFilter:[String:String]? = nil) -> SearchResultViewModel? {
-//        // Check if the ViewModel is already cached as a weak reference
-////        if let weakViewModel = viewModels[id] as? Weak<SearchResultViewModel>, let viewModel = weakViewModel.value {
-////            return viewModel  // Return the cached ViewModel if it exists
-////        } else {
-//            if let viewModel = appLevelContainer.resolve(SearchResultViewModel.self, arguments: filters, commonFilter) {
-////                viewModels[id] = Weak(value: viewModel)
-//                return viewModel
-//            }
-////        }
-//        return nil
-//    }
+ 
 }
 
 
@@ -232,67 +237,6 @@ struct Injected<Dependency: AnyObject> {  // Ensure Dependency is a class
 }
 
 
-//let container2 = Container() {
-//    // Register ViewModelA with a factory closure that accepts the id
-//    $0.register(ViewModelA.self) { resolver, id in
-//      
-//        return ViewModelA(id: id)
-//    }.inObjectScope(.transient)  // Use weak scope to ensure the instance is kept for reuse but allows cleanup
-//
-//   
-//    
-//    
-////    $0.register(ApiService.self) { _ in ApiService() }
-////    $0.register(URLGenerator.self) { _ in URLGenerator() }
-//    
-////    $0.register(Repository.self) { r in
-////        Repository(apiServiceManager: r.resolve(ApiService.self)!)
-////    }
-////    .inObjectScope(.transient)
-//    
-//   
-//    
-////    $0.register(HomeScreenViewModel.self) { (r)  in
-////        HomeScreenViewModel(repository: r.resolve(Repository.self)!)
-////        
-////    }
-////    .inObjectScope(.graph)
-//    
-//    $0.register(ArticleCellViewModel.self) { (r,article: ArticleADataModel) in ArticleCellViewModel(article: article, repository: r.resolve(Repository.self)!) }
-//        .inObjectScope(.transient)
-//    
-//    $0.register(CategoriesViewModel.self) { (r) in
-//        CategoriesViewModel(repository:r.resolve(Repository.self)!)}
-//            .inObjectScope(.transient)
-//    
-//    $0.register(CategoryViewModel.self) { (r,category: [String:String]) in CategoryViewModel(repository:r.resolve(Repository.self)!,filter: category)}
-//            .inObjectScope(.transient)
-//    
-//    
-//    $0.register(TrendingViewModel.self) { (r) in TrendingViewModel(repository:r.resolve(Repository.self)!)}
-//            .inObjectScope(.transient)
-//    
-//    
-//    
-//    $0.register(FilterViewModel.self) { r in FilterViewModel(repository:r.resolve(Repository.self)!)}
-//        .inObjectScope(.transient)
-//         
-//    $0.register(SearchResultViewModel.self) { (r,filter: [String:String])  in
-//        SearchResultViewModel(filters: filter, repository: r.resolve(Repository.self)!)
-//    }
-//    .inObjectScope(.transient)
-//    
-//    $0.register(SearchResultViewModel.self) { (r,filter: String)  in
-//        SearchResultViewModel(searchValue: filter, filters: nil, repository: r.resolve(Repository.self)!)
-//    }
-//    .inObjectScope(.transient)
-//    
-//    $0.register(EditorViewManager.self) { (r, delegate: ViewController) in
-//        EditorViewManager(delegate: delegate, repository: r.resolve(Repository.self)!)
-//    }
-//    
-//    }
-   
 
 extension Injection: DependencyResolverProtocol {
     func resolve<T>(_ type: T.Type) -> T? {

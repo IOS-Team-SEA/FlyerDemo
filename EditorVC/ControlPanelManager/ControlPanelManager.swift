@@ -10,7 +10,16 @@ import IOS_CommonEditor
 import Combine
 import SwiftUI
 
-class ControlPanelManager: ObservableObject{
+protocol controlPanelManagerProtocol{
+    var cpmCancellables: Set<AnyCancellable> { get }
+    var editorVC: EditorVC? { get }
+    func observeControlManager()
+    func createSwiftUIBottomContainer()
+    func cleanUp()
+}
+
+//@MainActor
+class ControlPanelManager: ObservableObject, controlPanelManagerProtocol{
     
     @Published var lastSelectedBGContent: AnyBGContent?
     @Published public var lastSelctedOverlayContent: AnyBGContent?
@@ -30,7 +39,9 @@ class ControlPanelManager: ObservableObject{
     @Published public var lastSelectedColor: AnyColorFilter?
     @Published public var lastSelctedBGContent: AnyBGContent?
     @Published public var didLayersTapped: Bool = false
+    @Published public var didWatchAdsTapped: Bool = false
     
+    @Published public var didPreviewTapped: Bool = false
     weak var editorVC: EditorVC?
 //    var engine: MetalEngine?
     var cpmCancellables: Set<AnyCancellable> = Set<AnyCancellable>()
@@ -44,7 +55,16 @@ class ControlPanelManager: ObservableObject{
     }
     
     deinit {
+        Task { @MainActor [weak self] in
+            self?.cleanUp()
+        }
         printLog("de-init \(self)")
+    }
+    
+//    @MainActor
+    func cleanUp(){
+        editorVC = nil
+        cpmCancellables.removeAll()
     }
     
     func observeControlManager() {
@@ -84,7 +104,15 @@ class ControlPanelManager: ObservableObject{
                 
                 editorVC.hostingerController?.rootView =  AnyView(
                     BaseContainer(
-                        baseContentType: engine.editorUIState,
+                        baseContentType: engine.editorUIState, didWatchAdsTapped: Binding(get: { [self] in
+                            self.didWatchAdsTapped
+                        }, set: { [self] newValue in
+                            self.didWatchAdsTapped = newValue
+                        }), didPreviewTapped: Binding(get: { [self] in
+                            self.didPreviewTapped
+                        }, set: { [self] newValue in
+                            self.didPreviewTapped = newValue
+                        }),
                         thumbImage: Binding(
                             get: {
                                 
@@ -107,9 +135,38 @@ class ControlPanelManager: ObservableObject{
                 templateHandler.currentActionState.exportPageTapped = false
             }
         }.store(in: &cpmCancellables)
+        
+        $didWatchAdsTapped.dropFirst().sink { [weak self, weak editorVC] value in
+            guard let self, let editorVC else { return }
+            
+            if value == true{
+                
+                editorVC.onSave()
+                
+            }
+        }.store(in: &cpmCancellables)
+        
+        $didPreviewTapped.dropFirst().sink{ [weak self, weak editorVC] value in
+            guard let self, let editorVC else { return }
+            guard let engine = editorVC.engine, let templateHandler = engine.templateHandler else {
+                printLog("template handler nil")
+                return }
+            if value != didPreviewTapped{
+                engine.editorUIState = .Preview
+                engine.templateHandler.deepSetCurrentModel(id: -1)
+                engine.templateHandler.currentActionState.timelineShow = false
+                editorVC.relayoutViewForPreview2()
+            }
+            else{
+                engine.timeLoopHandler?.renderState = .Stopped
+                editorVC.resizeViewForEdit2()
+                engine.templateHandler.currentActionState.timelineShow = true
+               
+            }
+        }.store(in: &cpmCancellables)
     }
     
-    func updateControlPanel() {
+    private func updateControlPanel() {
         guard let editorVC = editorVC else { return }
         guard let engine = editorVC.engine else { return }
         guard let currentModel = engine.templateHandler.currentModel else { return }
@@ -172,7 +229,7 @@ class ControlPanelManager: ObservableObject{
         }
     }
     
-    func addSwiftUIOpacityView() {
+    func createSwiftUIBottomContainer() {
         guard let editorVC = editorVC else { return }
         if let engine = editorVC.engine{
             if let containerView = editorVC.containerView{
@@ -186,7 +243,15 @@ class ControlPanelManager: ObservableObject{
                 editorVC.hostingerController = UIHostingController(
                     rootView: AnyView(
                         BaseContainer(
-                            baseContentType: engine.editorUIState,
+                            baseContentType: engine.editorUIState, didWatchAdsTapped: Binding(get: { [self] in
+                                self.didWatchAdsTapped
+                            }, set: { [self] newValue in
+                                self.didWatchAdsTapped = newValue
+                            }), didPreviewTapped: Binding(get: { [self] in
+                                self.didPreviewTapped
+                            }, set: { [self] newValue in
+                                self.didPreviewTapped = newValue
+                            }),
                             thumbImage: Binding(
                                 get: {
                                     thumbnailImageState.wrappedValue

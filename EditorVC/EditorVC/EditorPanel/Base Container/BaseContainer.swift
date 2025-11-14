@@ -14,6 +14,8 @@ struct BaseContainer: View {
 //    @Binding var didUseMeTapped: Bool
 //    @Binding var didGroupTapped: Bool
 //    @Binding var didCancelTapped: Bool
+    @Binding var didWatchAdsTapped: Bool
+    @Binding var didPreviewTapped: Bool
     @Binding var thumbImage: UIImage?
     @StateObject var actionStates: ActionStates
     // conflict genrating for jay merge
@@ -29,7 +31,7 @@ struct BaseContainer: View {
                 
                 VStack{
                     Spacer(minLength: 40)
-                    SelectThumbnailView(thumbnailImage: $thumbImage, watchAdsTapped: $actionStates.didWatchAdsTapped, goPremiumTapped: $actionStates.didGetPremiumTapped, isLastSelectedModel: $actionStates.isCurrentModelDeleted, exportSettings: exportSettings).environmentObject(UIStateManager.shared)
+                    SelectThumbnailView(thumbnailImage: $thumbImage, watchAdsTapped: $didWatchAdsTapped, goPremiumTapped: $actionStates.didGetPremiumTapped, isLastSelectedModel: $actionStates.isCurrentModelDeleted, exportSettings: exportSettings).environmentObject(UIStateManager.shared)
                 }
                 .frame(height: containerHeight + 60 , alignment: .top)
                 .cardBorderStyle( lineWidth: 0, padding: 0,  internalPadding: 0, shadow: false )
@@ -42,43 +44,43 @@ struct BaseContainer: View {
                 
 //                .directionalShadow(edges: [.top, .leading, .trailing])
 
-            case .UseMe:
-                Button{
-//                    actionStates.didUseMeTapped = true
-                }label: {
-                    Text("Use_Me")
-                        .font(.callout)
-                        .foregroundColor(.white)
-                        .frame(width: 150, height: 50)
-                }
-                .frame(width: 200, height: 50)
-                .background(AppStyle.accentColor_SwiftUI)
-                .cornerRadius(5)
-                .padding()
+//            case .UseMe:
+//                Button{
+////                    actionStates.didUseMeTapped = true
+//                }label: {
+//                    Text("Use_Me")
+//                        .font(.callout)
+//                        .foregroundColor(.white)
+//                        .frame(width: 150, height: 50)
+//                }
+//                .frame(width: 200, height: 50)
+//                .background(AppStyle.accentColor_SwiftUI)
+//                .cornerRadius(5)
+//                .padding()
                 
-            case .Purchase:
-                Button{
-//                    if !actionStates.didPurchasedTapped {
-//                        actionStates.didPurchasedTapped = true
-//                    }
-                }label: {
-//                    if actionStates.didPurchasedTapped{
-//                        ProgressView()
+//            case .Purchase:
+//                Button{
+////                    if !actionStates.didPurchasedTapped {
+////                        actionStates.didPurchasedTapped = true
+////                    }
+//                }label: {
+////                    if actionStates.didPurchasedTapped{
+////                        ProgressView()
+////                            .font(.callout)
+////                            .foregroundColor(.white)
+////                            .frame(width: 150, height: 50)
+////                    }
+////                    else{
+//                        Text("Purchase_")
 //                            .font(.callout)
 //                            .foregroundColor(.white)
 //                            .frame(width: 150, height: 50)
-//                    }
-//                    else{
-                        Text("Purchase_")
-                            .font(.callout)
-                            .foregroundColor(.white)
-                            .frame(width: 150, height: 50)
-//                    }
-                }
-                .frame(width: 200, height: 50)
-                .background(AppStyle.accentColor_SwiftUI)
-                .cornerRadius(5)
-                .padding()
+////                    }
+//                }
+//                .frame(width: 200, height: 50)
+//                .background(AppStyle.accentColor_SwiftUI)
+//                .cornerRadius(5)
+//                .padding()
             
             case .MultipleSelectMode:
                 
@@ -90,7 +92,7 @@ struct BaseContainer: View {
                 
             case .Preview:
                 Button{
-                    actionStates.didPreviewTapped = false
+                    didPreviewTapped = false
                 }label: {
                     Text("Editor_")
                         .font(.title2)
@@ -101,23 +103,23 @@ struct BaseContainer: View {
                 .background(AppStyle.accentColor_SwiftUI)
                 .cornerRadius(5)
                 .padding()
-            case .Personalised:
-                Button{
-//                    actionStates.didPersonalizeTapped = true
-                }label: {
-                        Text("Personalise_")
-                            .font(.callout)
-                            .foregroundColor(.white)
-                            .frame(width: 150, height: 50)
-                }
-                .frame(width: 200, height: 50)
-                .background(AppStyle.accentColor_SwiftUI)
-                .cornerRadius(5)
-                .padding()
-                PrimaryButton(title: "Personalise_",icon: "wand.and.sparkles",isPremium: false,isFullWidth: true) {
-//                    actionStates.didPersonalizeTapped = true
-
-                }    .padding(.horizontal)
+//            case .Personalised:
+//                Button{
+////                    actionStates.didPersonalizeTapped = true
+//                }label: {
+//                        Text("Personalise_")
+//                            .font(.callout)
+//                            .foregroundColor(.white)
+//                            .frame(width: 150, height: 50)
+//                }
+//                .frame(width: 200, height: 50)
+//                .background(AppStyle.accentColor_SwiftUI)
+//                .cornerRadius(5)
+//                .padding()
+//                PrimaryButton(title: "Personalise_",icon: "wand.and.sparkles",isPremium: false,isFullWidth: true) {
+////                    actionStates.didPersonalizeTapped = true
+//
+//                }    .padding(.horizontal)
             }
         }
         .frame(height: containerHeight )

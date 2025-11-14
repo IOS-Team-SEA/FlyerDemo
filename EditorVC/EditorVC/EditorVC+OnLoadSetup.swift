@@ -36,7 +36,7 @@ extension EditorVC {
         Task {
             
             
-            let didLoadScene = await engine!.prepareScene2(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: loadingState == .Edit ? true : false)
+            let didLoadScene = await engine!.prepareScene5(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: loadingState == .Edit ? true : false)
             
             if didLoadScene {
                 logInfo("DD_STARTED RENDERING", didLoadScene)
@@ -61,8 +61,8 @@ extension EditorVC {
             guard let editorView = editorView else { return }
             
 //            setupControlPanelManager()
-            createContainerView()
-            controlPanelManager?.addSwiftUIOpacityView()
+            createUIKitBottomContainer()
+            controlPanelManager?.createSwiftUIBottomContainer()
             
             
                 if let customloaderView = self.customLoader?.view{
@@ -85,6 +85,7 @@ extension EditorVC {
                 }
             logInfo("Loading State -> \(self.loadingState)")
                 if (self.loadingState == .Edit && self.loadingStaus){
+                    
                     self.addTimelineView()
                     self.timelineView?.setTemplateHandler(templateHandler: engine.templateHandler)
                     
@@ -273,7 +274,7 @@ extension EditorVC {
             _ = DBManager.shared.updateTemplateUpdatedDate(templateId: currentTemplateID, newValue: updatedAtString)
            
             Task {
-                let didLoadScene = await engine!.prepareScene2(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: true)
+                let didLoadScene = await engine!.prepareScene5(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: true)
                 if didLoadScene {
                     print("DD_STARTED RENDERING", didLoadScene)
 //                    self.observeCurrentActions()
@@ -349,7 +350,7 @@ extension EditorVC {
             loadingState = .Edit
             setEditorView()
             Task {
-                let didLoadScene = await engine!.prepareScene2(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: true)
+                let didLoadScene = await engine!.prepareScene5(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: true)
                 if didLoadScene {
                     print("DD_STARTED RENDERING", didLoadScene)
                     engine?.viewManager?.editView?.gestureView.isAllGesturesEnabled = true
@@ -408,7 +409,7 @@ extension EditorVC {
        
 
         Task {
-            let didLoadScene = await engine.prepareScene2(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: true)
+            let didLoadScene = await engine.prepareScene5(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: true)
             if didLoadScene {
                 print("DD_STARTED RENDERING", didLoadScene)
                
@@ -447,33 +448,33 @@ extension EditorVC {
 //   }
     
     
-    func relayoutViewForPreviewAfterPurchase2(templateId : Int){
-        guard let engine = engine else { return }
-
-        currentTemplateID = templateId
-        removeToolBar()
-        loadingStaus = true
-        self.loadingState = .Preview
-        setEditorView()
-        engine.templateHandler.currentActionState.didMusicPlayOnEditor = false
-
-        timelineView?.removeFromSuperview()
-        timelineView = nil
-        
-        navTitle.text = "Preview_".translate()
-        
-        Task {
-            let didLoadScene = await engine.prepareScene2(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: true)
-            if didLoadScene {
-                print("DD_STARTED RENDERING", didLoadScene)
-//                    self.observeCurrentActions()
-                engine.editorUIState = .UseMe
-                onSceneLoad()
-                
-            }
-        }
-        
-    }
+//    func relayoutViewForPreviewAfterPurchase2(templateId : Int){
+//        guard let engine = engine else { return }
+//
+//        currentTemplateID = templateId
+//        removeToolBar()
+//        loadingStaus = true
+//        self.loadingState = .Preview
+//        setEditorView()
+//        engine.templateHandler.currentActionState.didMusicPlayOnEditor = false
+//
+//        timelineView?.removeFromSuperview()
+//        timelineView = nil
+//        
+//        navTitle.text = "Preview_".translate()
+//        
+//        Task {
+//            let didLoadScene = await engine.prepareScene5(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: true)
+//            if didLoadScene {
+//                print("DD_STARTED RENDERING", didLoadScene)
+////                    self.observeCurrentActions()
+////                engine.editorUIState = .UseMe
+//                onSceneLoad()
+//                
+//            }
+//        }
+//        
+//    }
     
     
 //   func relayoutViewForPreviewAfterPurchase(templateId : Int){

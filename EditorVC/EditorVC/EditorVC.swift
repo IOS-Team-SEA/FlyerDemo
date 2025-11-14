@@ -164,8 +164,6 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
         cancellablesForEditor.removeAll()
         playerControlsCancellables.removeAll()
         editorVMCancellables.removeAll()
-        controlPanelManager?.editorVC = nil
-        controlPanelManager?.cpmCancellables.removeAll()
         controlPanelManager = nil
         engine?.drawCallManager?.stopNotifyingDrawCall()
 //        anayticsLogger.logEditorInteraction(action: .exit)
@@ -362,10 +360,11 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
             engine.templateHandler.currentActionState.zoomEnable.toggle()
         }
         
-        previewAction = UIAction(title: "Preview_".translate()) {  [weak engine] _ in
-            guard let engine = engine else { return }
+        previewAction = UIAction(title: "Preview_".translate()) {  [weak self, weak engine] _ in
+//            guard let engine = engine else { return }
+            guard let self, let engine else { return }
             
-            engine.templateHandler.currentActionState.didPreviewTapped = true
+            controlPanelManager?.didPreviewTapped = true
             //                self.viewModel.didPreviewTapped = true
         }
         
@@ -506,10 +505,10 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
     }
     
     func showImageNavigationBar(){
-        var menu2 = UIMenu(title: "", children: [
-            UIMenu(title: "", options: .displayInline, children: [layersAction!, convertToImage!]),
+        let menu2 = UIMenu(title: "", children: [
+            UIMenu(title: "", options: .displayInline, children: [layersAction!, resizeAction!, convertToImage!]),
             UIMenu(title: "", options: .displayInline, children: [zoomEnable!]),
-            UIMenu(title: "", options: .displayInline, children: [previewAction!]),
+//            UIMenu(title: "", options: .displayInline, children: [previewAction!]),
             UIMenu(title: "", options: .displayInline, children: [multiSelectAction!]),
             //                UIMenu(title: "", options: .displayInline, children: [timeline]),
             UIMenu(title: "", options: .displayInline, children: [snapAction!])
@@ -525,7 +524,7 @@ class EditorVC: UIViewController, NavAction , ActionStateObserversProtocol , Pla
     }
    
     func showVideoNavigationBar(){
-        var menu2 = UIMenu(title: "", children: [
+        let menu2 = UIMenu(title: "", children: [
             UIMenu(title: "", options: .displayInline, children: [layersAction!, resizeAction!]),
             UIMenu(title: "", options: .displayInline, children: [zoomEnable!]),
             UIMenu(title: "", options: .displayInline, children: [previewAction!]),

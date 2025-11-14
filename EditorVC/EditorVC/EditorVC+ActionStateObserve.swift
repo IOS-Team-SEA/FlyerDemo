@@ -162,31 +162,32 @@ extension EditorVC {
              showTimeline ? timelineView?.showTimeline() :  timelineView?.hideTimelines()
             }.store(in: &actionStateCancellables)
             
-         templateHandler.currentActionState.$didWatchAdsTapped.dropFirst().sink { [weak self] value in
-             guard let self = self else { return }
-             
-             if value == true{
-                 
-                 self.onSave()
-                 
-             }
-         }.store(in: &actionStateCancellables)
-         
-         templateHandler.currentActionState.$didPreviewTapped.dropFirst().sink{ [weak  self] value in
-             guard let self = self else { return }
-             if value != templateHandler.currentActionState.didPreviewTapped{
-                 engine.editorUIState = .Preview
-                 engine.templateHandler.deepSetCurrentModel(id: -1)
-                 engine.templateHandler.currentActionState.timelineShow = false
-                 relayoutViewForPreview2()
-             }
-             else{
-                 engine.timeLoopHandler?.renderState = .Stopped
-                 resizeViewForEdit2()
-                 engine.templateHandler.currentActionState.timelineShow = true
-                
-             }
-         }.store(in: &actionStateCancellables)
+//         templateHandler.currentActionState.$didWatchAdsTapped.dropFirst().sink { [weak self] value in
+//             guard let self = self else { return }
+//             
+//             if value == true{
+//                 
+//                 self.onSave()
+//                 
+//             }
+//         }.store(in: &actionStateCancellables)
+//         
+//         templateHandler.currentActionState.$didPreviewTapped.dropFirst().sink{ [weak  self] value in
+//             guard let self = self else { return }
+//             
+//             if value != templateHandler.currentActionState.didPreviewTapped{
+//                 engine.editorUIState = .Preview
+//                 engine.templateHandler.deepSetCurrentModel(id: -1)
+//                 engine.templateHandler.currentActionState.timelineShow = false
+//                 relayoutViewForPreview2()
+//             }
+//             else{
+//                 engine.timeLoopHandler?.renderState = .Stopped
+//                 resizeViewForEdit2()
+//                 engine.templateHandler.currentActionState.timelineShow = true
+//                
+//             }
+//         }.store(in: &actionStateCancellables)
          
          UIStateManager.shared.$isPremium.sink {[weak self] isPremium in
              guard let self = self else { return }

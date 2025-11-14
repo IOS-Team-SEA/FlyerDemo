@@ -75,7 +75,7 @@ extension EditorVC : ContainerHeightProtocol{
     //            ])
     //        }
     
-    func createContainerView() {
+    func createUIKitBottomContainer() {
         
         if self.containerView == nil {
             containerView = UIView()
