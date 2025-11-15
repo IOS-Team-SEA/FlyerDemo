@@ -9,7 +9,7 @@ import SwiftUI
 import IOS_CommonEditor
 
 struct StcikerContainreTabBar: View {
-    @State var templateType : OutputType = .Image
+    @Binding var templateType : OutputType
 
     
     //State Define for showing the panel at one time.

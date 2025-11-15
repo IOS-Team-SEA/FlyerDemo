@@ -34,7 +34,10 @@ extension EditorVC {
         }
         addPlayerControlView()
         Task {
-            let didLoadScene = await engine!.prepareScene2(templateID: self.currentTemplateID, refSize: BASE_SIZE, loadThumbnails: loadingState == .Edit ? true : false)
+            
+            
+            let didLoadScene = await engine!.prepareScene5(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: loadingState == .Edit ? true : false)
+            
             if didLoadScene {
                 logInfo("DD_STARTED RENDERING", didLoadScene)
 //                createContainerView()
@@ -47,6 +50,7 @@ extension EditorVC {
     }
     
     
+    
     func onSceneLoad() {
         DispatchQueue.main.async { [weak self , weak engine , weak editorView ] in
            
@@ -56,9 +60,10 @@ extension EditorVC {
             guard let engine = engine else { return }
             guard let editorView = editorView else { return }
             
-
-            createContainerView()
-            addSwiftUIOpacityView()
+//            setupControlPanelManager()
+            createUIKitBottomContainer()
+            controlPanelManager?.createSwiftUIBottomContainer()
+            
             
                 if let customloaderView = self.customLoader?.view{
                     customloaderView.removeFromSuperview()
@@ -80,17 +85,22 @@ extension EditorVC {
                 }
             logInfo("Loading State -> \(self.loadingState)")
                 if (self.loadingState == .Edit && self.loadingStaus){
+                    
+                    self.addTimelineView()
+                    self.timelineView?.setTemplateHandler(templateHandler: engine.templateHandler)
+                    
                     if engine.templateHandler.currentTemplateInfo?.outputType == .Video {
-                        self.addTimelineView()
-                        self.timelineView?.setTemplateHandler(templateHandler: engine.templateHandler)
+                        timelineView?.showTimeline()
 
                     } else {
+                        timelineView?.hideTimelines()
                         // add MockUP View here in future
                     }
 //                    self.addTimelineView()
                     if engine.viewManager == nil
                     {
-                        engine.viewManager = ViewManager(canvasView: editorView, logger: AppPackageLogger(), vmConfig: AppViewManagerConfigure())
+                        self.addViewManager(engine: engine, editorView: editorView)
+//                        engine.viewManager = ViewManager(canvasView: editorView, logger: AppPackageLogger(), vmConfig: AppViewManagerConfigure())
                         engine.prepareSceneUIView()
                         engine.viewManager?.editView?.gestureView.isAllGesturesEnabled = true
                     }
@@ -109,7 +119,7 @@ extension EditorVC {
 //                if self.loadingState == .Edit{
 //                    engine.templateHandler.currentActionState.didMusicPlayOnEditor = true
 //                }
-            if engine.templateHandler.currentTemplateInfo?.outputType == .Video {
+//            if engine.templateHandler.currentTemplateInfo?.outputType == .Video {
 
                 for subview in viewDummy.subviews {
                     subview.removeFromSuperview()
@@ -128,16 +138,17 @@ extension EditorVC {
                     self.view.bringSubviewToFront(containerView)
                 }
                 
-                self.hostingerMusic?.view.removeFromSuperview() // Remove the previous view if it exists
-                self.hostingerMusic = UIHostingController(rootView: MusicControlView(templateHandler: engine.templateHandler, playerVm: engine.templateHandler.playerControls!, actionStates: engine.templateHandler.currentActionState))
-                
-                let viewDummy = self.viewDummy
-                self.hostingerMusic?.view.frame = viewDummy.bounds
-                self.hostingerMusic?.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-                
-                if let hostingerMusic = self.hostingerMusic {
-                    viewDummy.addSubview(hostingerMusic.view)
-                }
+                self.addMusicControlView(engine: engine)
+//                self.hostingerMusic?.view.removeFromSuperview() // Remove the previous view if it exists
+//                self.hostingerMusic = UIHostingController(rootView: MusicControlView(templateHandler: engine.templateHandler, playerVm: engine.templateHandler.playerControls!, actionStates: engine.templateHandler.currentActionState))
+//                
+//                let viewDummy = self.viewDummy
+//                self.hostingerMusic?.view.frame = viewDummy.bounds
+//                self.hostingerMusic?.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+//                
+//                if let hostingerMusic = self.hostingerMusic {
+//                    viewDummy.addSubview(hostingerMusic.view)
+//                }
                 
                 if self.loadingState == .Preview{
                     engine.templateHandler.currentActionState.didMusicPlayOnEditor = false
@@ -145,23 +156,28 @@ extension EditorVC {
                 else{
                     engine.templateHandler.currentActionState.didMusicPlayOnEditor = true
                 }
-                self.muteHostingerController = UIHostingController(rootView: MuteControl(isMute: Binding(get: {
-                    engine.templateHandler.currentActionState.isMute
-                }, set: { newValue in
-                    engine.templateHandler.currentActionState.isMute = newValue
-                })))
                 
-                self.muteHostingerController.view.frame = CGRect(x: 10, y: 120, width: 40, height: 40)
-                self.muteHostingerController.view.backgroundColor = .clear
-                self.muteHostingerController.view.isHidden = true
-                
-                
-                if  let muteView = self.muteHostingerController.view {
-                    self.view.addSubview(muteView)
-                    self.view.bringSubviewToFront(muteView)
-                }
+                self.addMuteControls(engine: engine)
+//                self.muteHostingerController = UIHostingController(rootView: MuteControl(isMute: Binding(get: {
+//                    engine.templateHandler.currentActionState.isMute
+//                }, set: { newValue in
+//                    engine.templateHandler.currentActionState.isMute = newValue
+//                })))
+//                
+//                self.muteHostingerController.view.frame = CGRect(x: 10, y: 120, width: 40, height: 40)
+//                self.muteHostingerController.view.backgroundColor = .clear
+//                self.muteHostingerController.view.isHidden = true
+//                
+//                
+//                if  let muteView = self.muteHostingerController.view {
+//                    self.view.addSubview(muteView)
+//                    self.view.bringSubviewToFront(muteView)
+//                }
+            
+            if engine.templateHandler.currentTemplateInfo?.outputType == .Video {
+                self.showMusicControlView()
             } else if engine.templateHandler.currentTemplateInfo?.outputType == .Image  {
-                
+                self.hideMusicControlView()
 
                 
             }
@@ -185,6 +201,49 @@ extension EditorVC {
         }
     }
     
+    func showMusicControlView(){
+        self.viewDummy.isHidden = false
+    }
+    
+    func hideMusicControlView(){
+        self.viewDummy.isHidden = true
+    }
+    
+    func addViewManager(engine: MetalEngine, editorView: EditorView){
+       
+        engine.viewManager = ViewManager(canvasView: editorView, logger: AppPackageLogger(), vmConfig: AppViewManagerConfigure(), toolbarConfig: ToolBarMiniViewManager(engine: engine))
+    }
+    
+    func addMusicControlView(engine: MetalEngine){
+        self.hostingerMusic?.view.removeFromSuperview() // Remove the previous view if it exists
+        self.hostingerMusic = UIHostingController(rootView: MusicControlView(templateHandler: engine.templateHandler, playerVm: engine.templateHandler.playerControls!, actionStates: engine.templateHandler.currentActionState))
+        
+        let viewDummy = self.viewDummy
+        self.hostingerMusic?.view.frame = viewDummy.bounds
+        self.hostingerMusic?.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        
+        if let hostingerMusic = self.hostingerMusic {
+            viewDummy.addSubview(hostingerMusic.view)
+        }
+    }
+    
+    func addMuteControls(engine: MetalEngine){
+        self.muteHostingerController = UIHostingController(rootView: MuteControl(isMute: Binding(get: {
+            engine.templateHandler.currentActionState.isMute
+        }, set: { newValue in
+            engine.templateHandler.currentActionState.isMute = newValue
+        })))
+        
+        self.muteHostingerController.view.frame = CGRect(x: 10, y: 120, width: 40, height: 40)
+        self.muteHostingerController.view.backgroundColor = .clear
+        self.muteHostingerController.view.isHidden = true
+        
+        
+        if  let muteView = self.muteHostingerController.view {
+            self.view.addSubview(muteView)
+            self.view.bringSubviewToFront(muteView)
+        }
+    }
     
     func relayoutViewForEdit2() {
         navTitle.text = "" //NK*
@@ -215,7 +274,7 @@ extension EditorVC {
             _ = DBManager.shared.updateTemplateUpdatedDate(templateId: currentTemplateID, newValue: updatedAtString)
            
             Task {
-                let didLoadScene = await engine!.prepareScene2(templateID: self.currentTemplateID, refSize: BASE_SIZE, loadThumbnails: true)
+                let didLoadScene = await engine!.prepareScene5(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: true)
                 if didLoadScene {
                     print("DD_STARTED RENDERING", didLoadScene)
 //                    self.observeCurrentActions()
@@ -291,11 +350,13 @@ extension EditorVC {
             loadingState = .Edit
             setEditorView()
             Task {
-                let didLoadScene = await engine!.prepareScene2(templateID: self.currentTemplateID, refSize: BASE_SIZE, loadThumbnails: true)
+                let didLoadScene = await engine!.prepareScene5(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: true)
                 if didLoadScene {
                     print("DD_STARTED RENDERING", didLoadScene)
                     engine?.viewManager?.editView?.gestureView.isAllGesturesEnabled = true
                     self.observeCurrentActions()
+                    self.observeEditorAction()
+                    self.controlPanelManager?.observeControlManager()
                     onSceneLoad()
                     
                 }
@@ -304,26 +365,28 @@ extension EditorVC {
    }
     
     
-    func resizeViewForEdit2(templateId : Int) {
-        self.navigationItem.hidesBackButton = false
-           
-          
-            navTitle.text = ""
-        if loadingState == .Preview{
-            loadingStaus = true
-            loadingState = .Edit
-            setEditorView()
-            Task {
-                let didLoadScene = await engine!.prepareScene2(templateID: templateId, refSize: BASE_SIZE, loadThumbnails: true)
-                if didLoadScene {
-                    print("DD_STARTED RENDERING", didLoadScene)
-                    self.observeCurrentActions()
-                    onSceneLoad()
-                    
-                }
-            }
-        }
-   }
+//    func resizeViewForEdit2(templateId : Int) {
+//        self.navigationItem.hidesBackButton = false
+//           
+//          
+//            navTitle.text = ""
+//        if loadingState == .Preview{
+//            loadingStaus = true
+//            loadingState = .Edit
+//            setEditorView()
+//            Task {
+//                let didLoadScene = await engine!.prepareScene2(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: true)
+//                if didLoadScene {
+//                    print("DD_STARTED RENDERING", didLoadScene)
+//                    self.observeCurrentActions()
+//                    self.observeEditorAction()
+//                    self.controlPanelManager?.observeControlManager()
+//                    onSceneLoad()
+//                    
+//                }
+//            }
+//        }
+//   }
 
     
     func relayoutViewForPreview2(){
@@ -346,12 +409,14 @@ extension EditorVC {
        
 
         Task {
-            let didLoadScene = await engine.prepareScene2(templateID: self.currentTemplateID, refSize: BASE_SIZE, loadThumbnails: true)
+            let didLoadScene = await engine.prepareScene5(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: true)
             if didLoadScene {
                 print("DD_STARTED RENDERING", didLoadScene)
                
                 engine.editorUIState = .Preview
                 self.observeCurrentActions()
+                self.observeEditorAction()
+                self.controlPanelManager?.observeControlManager()
                 onSceneLoad()
                 
             }
@@ -383,33 +448,33 @@ extension EditorVC {
 //   }
     
     
-    func relayoutViewForPreviewAfterPurchase2(templateId : Int){
-        guard let engine = engine else { return }
-
-        currentTemplateID = templateId
-        removeToolBar()
-        loadingStaus = true
-        self.loadingState = .Preview
-        setEditorView()
-        engine.templateHandler.currentActionState.didMusicPlayOnEditor = false
-
-        timelineView?.removeFromSuperview()
-        timelineView = nil
-        
-        navTitle.text = "Preview_".translate()
-        
-        Task {
-            let didLoadScene = await engine.prepareScene2(templateID: self.currentTemplateID, refSize: BASE_SIZE, loadThumbnails: true)
-            if didLoadScene {
-                print("DD_STARTED RENDERING", didLoadScene)
-//                    self.observeCurrentActions()
-                engine.editorUIState = .UseMe
-                onSceneLoad()
-                
-            }
-        }
-        
-    }
+//    func relayoutViewForPreviewAfterPurchase2(templateId : Int){
+//        guard let engine = engine else { return }
+//
+//        currentTemplateID = templateId
+//        removeToolBar()
+//        loadingStaus = true
+//        self.loadingState = .Preview
+//        setEditorView()
+//        engine.templateHandler.currentActionState.didMusicPlayOnEditor = false
+//
+//        timelineView?.removeFromSuperview()
+//        timelineView = nil
+//        
+//        navTitle.text = "Preview_".translate()
+//        
+//        Task {
+//            let didLoadScene = await engine.prepareScene5(templateInfo: self.currentTemplateInfo, refSize: BASE_SIZE, loadThumbnails: true)
+//            if didLoadScene {
+//                print("DD_STARTED RENDERING", didLoadScene)
+////                    self.observeCurrentActions()
+////                engine.editorUIState = .UseMe
+//                onSceneLoad()
+//                
+//            }
+//        }
+//        
+//    }
     
     
 //   func relayoutViewForPreviewAfterPurchase(templateId : Int){
@@ -433,7 +498,7 @@ extension EditorVC {
 //   }
     
     func loadEditorView(frame:CGRect,center:CGPoint) {
-        if let metalEngine = viewModel.metalEngine{
+        if let metalEngine = viewModel?.metalEngine{
             
             
             if editorView == nil{

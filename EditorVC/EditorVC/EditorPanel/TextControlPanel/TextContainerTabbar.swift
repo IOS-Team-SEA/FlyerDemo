@@ -9,6 +9,7 @@ import SwiftUI
 import IOS_CommonEditor
 
 struct TextContainerTabbar: View {
+    @Binding var templateType : OutputType
     @State private var isVisible = false
     /* Panel State */
     @Binding var didReplaceTabClicked : Bool
@@ -56,7 +57,7 @@ struct TextContainerTabbar: View {
     @Binding var didColorAdjustmentClicked : Bool
     
     
-    @State var templateType : OutputType = .Image
+    
     
     //Height Confirm Function.
     func heightConfirm()-> Bool{

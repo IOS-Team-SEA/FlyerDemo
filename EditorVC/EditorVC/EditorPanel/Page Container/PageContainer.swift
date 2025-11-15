@@ -12,6 +12,7 @@ struct PageContainer: View {
     
     @ObservedObject var currentModel: PageInfo
     @StateObject var actionStates: ActionStates
+    @StateObject var cpm: ControlPanelManager
     @State var didLayersTabClicked : Bool    = false
     @State var didMusicTabClicked: Bool      = false
     @State var didBGTabClicked : Bool        = false
@@ -49,21 +50,21 @@ struct PageContainer: View {
         VStack{
     
             if didColorTabClikced{
-                TextColorPanel(templateID: currentModel.templateID, startColor: $currentModel.beginBgContent, endColor: $currentModel.endBgContent, colorFilter: $currentModel.bgContent, showReset: false, updateThumb: $actionStates.updatePageAndParentThumb,lastSelectedBGColor: $actionStates.lastSelectedBGColor, thumbImage: $actionStates.pageModelArray.first!.thumbImage, textBGType: .constant(0)).frame(height: panelHeight)
+                TextColorPanel(templateID: currentModel.templateID, startColor: $currentModel.beginBgContent, endColor: $currentModel.endBgContent, colorFilter: $currentModel.bgContent, showReset: false, updateThumb: $actionStates.updatePageAndParentThumb,lastSelectedBGColor: $cpm.lastSelectedBGColor, thumbImage: $actionStates.pageModelArray.first!.thumbImage, textBGType: .constant(0)).frame(height: panelHeight)
             }else if didGradientTabClikced{
                 GradientPanelView(beginBgContent: $currentModel.beginBgContent, endBgContent: $currentModel.endBgContent, gradient: $currentModel.bgContent, thumbImage: $actionStates.pageModelArray.first!.thumbImage, updateThumb: $actionStates.updatePageAndParentThumb).frame(height: panelHeight)
             }else if didBackgroundTabClikced{
-                BGControlPanelView(imageType: $currentModel.imageType, wallpaper: $currentModel.bgContent, lastSelectedBGContent: $actionStates.lastSelctedBGContent, endBGContent: $currentModel.endBgContent, /*ratioSize: ratioSize*/ratioSize: ratioInfo?.ratioSize ?? CGSize(width: 1, height: 1), updateThumb: $actionStates.updatePageAndParentThumb).frame(height: panelHeight).environmentObject(UIStateManager.shared)
+                BGControlPanelView(imageType: $currentModel.imageType, wallpaper: $currentModel.bgContent, lastSelectedBGContent: $cpm.lastSelctedBGContent, endBGContent: $currentModel.endBgContent, /*ratioSize: ratioSize*/ratioSize: ratioInfo?.ratioSize ?? CGSize(width: 1, height: 1), updateThumb: $actionStates.updatePageAndParentThumb).frame(height: panelHeight).environmentObject(UIStateManager.shared)
             }else if didTextureTabClikced{
-                TexturePanelView(tileSize: $currentModel.tileMultiple, imageType: $currentModel.imageType, beginTileMultiple: $currentModel.beginTileMultiple, endTileMultiple: $currentModel.endTileMultiple, textureBG: $currentModel.bgContent, endBgContent: $currentModel.endBgContent, lastSelectedBGContent: $actionStates.lastSelctedBGContent, refSize: ratioInfo?.ratioSize ?? CGSize(width: 1, height: 1), updateThumb: $actionStates.updatePageAndParentThumb).frame(height: panelHeight).environmentObject(UIStateManager.shared)
+                TexturePanelView(tileSize: $currentModel.tileMultiple, imageType: $currentModel.imageType, beginTileMultiple: $currentModel.beginTileMultiple, endTileMultiple: $currentModel.endTileMultiple, textureBG: $currentModel.bgContent, endBgContent: $currentModel.endBgContent, lastSelectedBGContent: $cpm.lastSelctedBGContent, refSize: ratioInfo?.ratioSize ?? CGSize(width: 1, height: 1), updateThumb: $actionStates.updatePageAndParentThumb).frame(height: panelHeight).environmentObject(UIStateManager.shared)
             }else if didBlurTabClikced{
 //                BlurPanelView(blur: $currentModel.bgBlurProgress, beginBlur: $currentModel.beginBlur, endBlur: $currentModel.endBlur, updateThumb: $actionStates.updatePageAndParentThumb).frame(height: panelHeight)
                 OpacityPanel(opacity: $currentModel.modelOpacity, showPanel: $didBlurTabClikced, endOpacity: $currentModel.endOpacity, beginOpacity: $currentModel.beginOpacity, updateThumb: $actionStates.updateThumb).frame(height: panelHeight)
                 
             }else if didOverlayTabClikced{
-                OverlayPanelView(opacity: $currentModel.overlayOpacity, beginOverlayOpacity: $currentModel.beginOverlayOpacity, endOverlayOpacity: $currentModel.endOverlayOpacity, imageType: $currentModel.overlayType, overlayBG: $currentModel.bgOverlayContent, endBgContent: $currentModel.endOverlayContent, lastSelectedOverlay: $actionStates.lastSelctedOverlayContent, refSize: ratioInfo?.ratioSize ?? CGSize(width: 1, height: 1), updateThumb: $actionStates.updatePageAndParentThumb).frame(height: panelHeight)
+                OverlayPanelView(opacity: $currentModel.overlayOpacity, beginOverlayOpacity: $currentModel.beginOverlayOpacity, endOverlayOpacity: $currentModel.endOverlayOpacity, imageType: $currentModel.overlayType, overlayBG: $currentModel.bgOverlayContent, endBgContent: $currentModel.endOverlayContent, lastSelectedOverlay: $cpm.lastSelctedOverlayContent, refSize: ratioInfo?.ratioSize ?? CGSize(width: 1, height: 1), updateThumb: $actionStates.updatePageAndParentThumb).frame(height: panelHeight)
             }else if didFilterAdjustmentClicked{
-                FilterAdjustmentView(selectedFilter: $currentModel.filterType, lastSelectedFilter: $actionStates.lastSelectedFilter, updateThumb: $actionStates.updatePageAndParentThumb).frame(height: panelHeight)
+                FilterAdjustmentView(selectedFilter: $currentModel.filterType, lastSelectedFilter: $cpm.lastSelectedFilter, updateThumb: $actionStates.updatePageAndParentThumb).frame(height: panelHeight)
             }else if didColorAdjustmentClicked{
                 ColorAdjustMentView(brightness: $currentModel.brightnessIntensity, beginBrightness: $currentModel.beginBrightnessIntensity, endBrightness: $currentModel.endBrightnessIntensity, contrast: $currentModel.contrastIntensity, beginContrast: $currentModel.beginContrastIntensity, endContrast: $currentModel.endContrastIntensity, highlight: $currentModel.highlightIntensity, beginHighlight: $currentModel.beginHighlightIntensity, endHighlight: $currentModel.endHighlightIntensity, shadows: $currentModel.shadowsIntensity, beginShadows: $currentModel.beginShadowsIntensity, endShadows: $currentModel.endShadowsIntensity, saturation: $currentModel.saturationIntensity, beginSaturation: $currentModel.beginSaturationIntensity, endSaturation: $currentModel.endSaturationIntensity, vibrance: $currentModel.vibranceIntensity, beginVibrance: $currentModel.beginVibranceIntensity, endVibrance: $currentModel.endVibranceIntensity, sharpness: $currentModel.sharpnessIntensity, beginSharpness: $currentModel.beginSharpnessIntensity, endSharpness: $currentModel.endSharpnessIntensity, warmth: $currentModel.warmthIntensity, beginWarmth: $currentModel.beginWarmthIntensity, endWarmth: $currentModel.endWarmthIntensity, tint: $currentModel.tintIntensity, beginTint: $currentModel.beginTintIntensity, endTint: $currentModel.endTintIntensity, selectedColorAdjustment: $currentModel.colorAdjustmentType, updateThumb: $actionStates.updatePageAndParentThumb).frame(height: panelHeight)
             }else if didShapesClicked{
@@ -76,7 +77,7 @@ struct PageContainer: View {
             }
             
             if didBGTabClicked{
-                BGContainerTabbar(didColorTabClicked: $didColorTabClikced, didGradientTabClicked: $didGradientTabClikced, didBackgroundTabClicked: $didBackgroundTabClikced, didTextureTabClicked: $didTextureTabClikced, didGalleryTabClicked: $didGalleryTabClikced, didBlurTabClicked: $didBlurTabClikced, didOverlayTabClicked: $didOverlayTabClikced, didFilterAdjustmentClicked: $didFilterAdjustmentClicked, didColorAdjustmentClicked: $didColorAdjustmentClicked, didFilterShapesClicked: $didShapesClicked, lastSelectedTab: $actionStates.lastSelectedBGTab, didCloseButtonTapped: $didBGTabClicked, delegate: delegate).frame(height: containerDefaultHeight)
+                BGContainerTabbar(didColorTabClicked: $didColorTabClikced, didGradientTabClicked: $didGradientTabClikced, didBackgroundTabClicked: $didBackgroundTabClikced, didTextureTabClicked: $didTextureTabClikced, didGalleryTabClicked: $didGalleryTabClikced, didBlurTabClicked: $didBlurTabClikced, didOverlayTabClicked: $didOverlayTabClikced, didFilterAdjustmentClicked: $didFilterAdjustmentClicked, didColorAdjustmentClicked: $didColorAdjustmentClicked, didFilterShapesClicked: $didShapesClicked, lastSelectedTab: $cpm.lastSelectedBGTab, didCloseButtonTapped: $didBGTabClicked, delegate: delegate).frame(height: containerDefaultHeight)
                     .frame(maxWidth: tabbarWidth)
                     .frame(height: tabbarHeight)
                    
@@ -87,7 +88,7 @@ struct PageContainer: View {
                     
                     .onChange(of: didLayersTabClicked) { newValue in
                         if newValue == true{
-                            actionStates.didLayersTapped = true
+                            cpm.didLayersTapped = true
                             didLayersTabClicked.toggle()
                         }
                     }

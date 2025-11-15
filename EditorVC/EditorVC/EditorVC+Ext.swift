@@ -75,7 +75,7 @@ extension EditorVC : ContainerHeightProtocol{
     //            ])
     //        }
     
-    func createContainerView() {
+    func createUIKitBottomContainer() {
         
         if self.containerView == nil {
             containerView = UIView()
@@ -99,60 +99,63 @@ extension EditorVC : ContainerHeightProtocol{
             containerView.removeConstraint(containerPanelHeightConstraint)
         }
       
-            containerPanelHeightConstraint = containerView.heightAnchor.constraint(equalToConstant: CGFloat(glob_constant) + UIApplication.shared.cWindow!.safeAreaInsets.bottom)
+        let bottomPadding = UIApplication.shared.cWindow?.safeAreaInsets.bottom
+        containerPanelHeightConstraint = containerView.heightAnchor.constraint(equalToConstant: CGFloat(glob_constant) + (bottomPadding ?? (UIDevice.current.userInterfaceIdiom == .pad ? 0 : 34)))
             containerPanelHeightConstraint?.priority = UILayoutPriority(800)
             containerPanelHeightConstraint?.isActive = true
     }
     
-    func addSwiftUIOpacityView() {
-        if let engine = self.engine{
-            if let containerView = containerView{
-                
-                let thumbImage = engine.templateHandler.currentPageModel?.thumbImage
-                self.thumbnailImage = thumbImage
-                        
-                        // Use @StateObject to create a state wrapper around the image
-                let thumbnailImageState = State(initialValue: thumbImage)
-                hostingerController?.view.removeFromSuperview()
-                hostingerController?.removeFromParent()
-                hostingerController = UIHostingController(
-                    rootView: AnyView(
-                        BaseContainer(
-                            baseContentType: engine.editorUIState,
-                            thumbImage: Binding(
-                                get: {
-                                    thumbnailImageState.wrappedValue
-                                },
-                                set: { [weak self] newValue in
-                                    guard let self = self else { return }
-                                    
-                                    thumbnailImageState.wrappedValue = newValue
-                                }
-                            ),
-                            actionStates: engine.templateHandler.currentActionState,
-                            exportSettings: engine.templateHandler.exportSettings,
-                            delegate: self // Ensure delegate is weak in BaseContainer
-                        ).environment(\.sizeCategory, .medium)
-                    )
-                )
-                
-                
-                observeCurrentActions()
-                //        self.engine.currentModel = TextInfo()
-                //        hostingerController = UIHostingController(rootView: TextContainer(currentModel: self.engine.currentModel as! TextInfo, currentActionModel: self.engine.actionStates, delegate: self))
-                
-                   self.addChild(hostingerController!)
-                        containerView.addSubview(hostingerController!.view)
-                        hostingerController!.didMove(toParent: self)
-                        
-                hostingerController!.view.frame = CGRect(x: 0, y: 0, width: Int(containerView.frame.size.width), height: Int(containerView.frame.size.height) )
-                hostingerController?.view.backgroundColor = UIColor.systemBackground//UIColor(named: "editorBG")
-              
-                //        }
-                //        }
-                
-            }
-        }
-    }
+//    func addSwiftUIOpacityView() {
+//        if let engine = self.engine{
+//            if let containerView = containerView{
+//                
+//                let thumbImage = engine.templateHandler.currentPageModel?.thumbImage
+//                self.thumbnailImage = thumbImage
+//                        
+//                        // Use @StateObject to create a state wrapper around the image
+//                let thumbnailImageState = State(initialValue: thumbImage)
+//                hostingerController?.view.removeFromSuperview()
+//                hostingerController?.removeFromParent()
+//                hostingerController = UIHostingController(
+//                    rootView: AnyView(
+//                        BaseContainer(
+//                            baseContentType: engine.editorUIState,
+//                            thumbImage: Binding(
+//                                get: {
+//                                    thumbnailImageState.wrappedValue
+//                                },
+//                                set: { [weak self] newValue in
+//                                    guard let self = self else { return }
+//                                    
+//                                    thumbnailImageState.wrappedValue = newValue
+//                                }
+//                            ),
+//                            actionStates: engine.templateHandler.currentActionState,
+//                            exportSettings: engine.templateHandler.exportSettings,
+//                            delegate: self // Ensure delegate is weak in BaseContainer
+//                        ).environment(\.sizeCategory, .medium)
+//                    )
+//                )
+//                
+//                
+//                observeCurrentActions()
+//                observeEditorAction()
+//                controlPanelManager?.observeControlManager()
+//                //        self.engine.currentModel = TextInfo()
+//                //        hostingerController = UIHostingController(rootView: TextContainer(currentModel: self.engine.currentModel as! TextInfo, currentActionModel: self.engine.actionStates, delegate: self))
+//                
+//                   self.addChild(hostingerController!)
+//                        containerView.addSubview(hostingerController!.view)
+//                        hostingerController!.didMove(toParent: self)
+//                        
+//                hostingerController!.view.frame = CGRect(x: 0, y: 0, width: Int(containerView.frame.size.width), height: Int(containerView.frame.size.height) )
+//                hostingerController?.view.backgroundColor = UIColor.systemBackground//UIColor(named: "editorBG")
+//              
+//                //        }
+//                //        }
+//                
+//            }
+//        }
+//    }
 }
 

@@ -9,7 +9,7 @@ import SwiftUI
 import IOS_CommonEditor
 
 struct ParentContainerTabbar: View {
-    @State var templateType : OutputType = .Image
+    @Binding var templateType : OutputType
 
     /* Parent State for Managing Tabbar */
     @Binding var didLayersTabClicked : Bool

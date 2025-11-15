@@ -10,8 +10,10 @@ import IOS_CommonEditor
 
 struct ParentContainer: View {
     /* Model for Parent */
+    @Binding var outputType: OutputType
     @ObservedObject var currentModel : ParentModel
     @ObservedObject var actionStates: ActionStates
+    @ObservedObject var cpm : ControlPanelManager
    // @EnvironmentObject var subscriptionEnvironmentObj : SubscriptionEnvironmentObj
     
 //    @State var animTempalate: [DBAnimationTemplateModel] = []
@@ -67,7 +69,7 @@ struct ParentContainer: View {
                 AnimationsPanelView(durationIN: $currentModel.inAnimationDuration, durationOUT: $currentModel.outAnimationDuration, durationLOOP: $currentModel.loopAnimationDuration, beginDurationIN: $currentModel.inAnimationBeginDuration, endDurationIN: $currentModel.inAnimationEndDuration, beginDurationOUT: $currentModel.outAnimationBeginDuration, endDurationOUT: $currentModel.outAnimationEndDuration, beginDurationLOOP: $currentModel.loopAnimationBeginDuration, endDurationLOOP: $currentModel.loopAnimationEndDuration,inAnimTemplate: $currentModel.inAnimation , outAnimTemplate: $currentModel.outAnimation,loopAnimTemplate: $currentModel.loopAnimation, lastSelectedAnimType: $actionStates.lastSelectedAnimType, lastSelectedCategoryId: $actionStates.lastSelectedCategoryId).frame(height: panelHeight)
                 
             }else if didTransformTabClicked && !currentModel.editState{
-                TransformPanel(flipHorizontal: $currentModel.modelFlipHorizontal, flipVertical: $currentModel.modelFlipVertical, lastSelectedFlipV: $actionStates.lastSelectedFlipV, lastSelectedFlipH: $actionStates.lastSelectedFlipH).frame(height: panelHeight)
+                TransformPanel(flipHorizontal: $currentModel.modelFlipHorizontal, flipVertical: $currentModel.modelFlipVertical, lastSelectedFlipV: $cpm.lastSelectedFlipV, lastSelectedFlipH: $cpm.lastSelectedFlipH).frame(height: panelHeight)
             }else{
                 Spacer()
             }
@@ -81,13 +83,13 @@ struct ParentContainer: View {
                     .frame(height: tabbarHeight)
                     .onChange(of: didParentEditLayersTabClicked) { newValue in
                         if newValue == true{
-                            actionStates.didLayersTapped = true
+                            cpm.didLayersTapped = true
                             didParentEditLayersTabClicked.toggle()
                         }
                     }
                 
             }else{
-                ParentContainerTabbar(didLayersTabClicked: $didLayersTabClicked, didNudgeTabClicked: $didNudgeTabClicked, didTransformTabClicked: $didTransformTabClicked, didOpacityTabClicked: $didOpacityTabClicked, didAnimationTabClicked: $didAnimationTabClicked, didDeleteTabClicked: $currentModel.softDelete, didCopyTabClicked: $didCopyTabClicked, didDuplicateTabClicked: $didDuplicateTabClicked, didPasteTabClicked: $didPasteTabClicked, didLockUnclockTabClicked: $currentModel.lockStatus, didUngroupTabClicked: $actionStates.didUngroupTapped, didEditTabClicked: $currentModel.editState, didGroupTabClicked: $didGroupTabClicked, didShowDurationButtonCliked: $actionStates.didShowDurationButtonCliked,lastSelectedTab: $actionStates.lastSelectedTextTab, didCloseButtonTapped: $actionStates.didCloseTabbarTapped, showPanel: $showPanel, isCurrentModelDeleted: $actionStates.isCurrentModelDeleted, shouldRefreshOnAddComponent: $actionStates.shouldRefreshOnAddComponent, delegate: delegate).frame(height: containerDefaultHeight)
+                ParentContainerTabbar(templateType: $outputType, didLayersTabClicked: $didLayersTabClicked, didNudgeTabClicked: $didNudgeTabClicked, didTransformTabClicked: $didTransformTabClicked, didOpacityTabClicked: $didOpacityTabClicked, didAnimationTabClicked: $didAnimationTabClicked, didDeleteTabClicked: $currentModel.softDelete, didCopyTabClicked: $didCopyTabClicked, didDuplicateTabClicked: $didDuplicateTabClicked, didPasteTabClicked: $didPasteTabClicked, didLockUnclockTabClicked: $currentModel.lockStatus, didUngroupTabClicked: $actionStates.didUngroupTapped, didEditTabClicked: $currentModel.editState, didGroupTabClicked: $didGroupTabClicked, didShowDurationButtonCliked: $cpm.didShowDurationButtonCliked,lastSelectedTab: $actionStates.lastSelectedTextTab, didCloseButtonTapped: $cpm.didCloseTabbarTapped, showPanel: $showPanel, isCurrentModelDeleted: $actionStates.isCurrentModelDeleted, shouldRefreshOnAddComponent: $actionStates.shouldRefreshOnAddComponent, delegate: delegate).frame(height: containerDefaultHeight)
 //                    .padding(.bottom, bottomPadding)
                     .frame(maxWidth: tabbarWidth)
                     .frame(height: tabbarHeight)
@@ -116,7 +118,7 @@ struct ParentContainer: View {
                     }
                     .onChange(of: didLayersTabClicked) { newValue in
                         if newValue == true{
-                            actionStates.didLayersTapped = true
+                            cpm.didLayersTapped = true
                             didLayersTabClicked.toggle()
                         }
                     }
